@@ -1,0 +1,58 @@
+{
+  "name": "git-it-done",
+  "version": "1.0.1",
+  "description": "Smart auto-commit tool with beautiful CLI interface for streamlined Git workflow",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "git-it-done": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "ts-node --esm ./src/index.ts",
+    "build": "tsc",
+    "prod": "node ./dist/index.js",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"No tests specified\" && exit 0",
+    "start": "npm run build && npm run prod",
+    "install-global": "npm install -g .",
+    "uninstall-global": "npm uninstall -g git-it-done"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "git",
+    "commit",
+    "cli",
+    "automation",
+    "workflow",
+    "typescript",
+    "interactive",
+    "conventional-commits"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sidhxntt/AutoCommitter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sidhxntt/AutoCommitter/issues"
+  },
+  "homepage": "https://github.com/sidhxntt/AutoCommitter#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "preferGlobal": true,
+  "dependencies": {
+    "@clack/prompts": "^0.10.1",
+    "chalk": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

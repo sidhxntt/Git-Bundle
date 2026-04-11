@@ -1,0 +1,3026 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      :root {
+        --text-primary: #2a2520;
+        --text-secondary: #302e2bff;
+        --text-muted: #33322eff;
+      }
+      body {
+        width: 100%;
+        min-height: 100vh;
+        background: linear-gradient(
+          160deg,
+          #f0ebe3 0%,
+          #e8e2da 35%,
+          #ddd6cc 65%,
+          #d4cdc3 100%
+        );
+        background-attachment: fixed;
+        font-family: "Inter", sans-serif;
+        color: var(--text-primary);
+        overflow-x: hidden;
+        transition: color 0.6s ease;
+      }
+
+      /* 3D Canvas — fixed, always on screen */
+      #root {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+      }
+      #root canvas {
+        pointer-events: auto;
+      }
+
+      /* Page content scrolls over/around the 3D */
+      .page-content {
+        position: relative;
+        z-index: 10;
+        pointer-events: none;
+      }
+      .page-content * {
+        pointer-events: auto;
+      }
+
+      /* ===== TOP NAV ===== */
+      .top-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 48px;
+        background: transparent !important;
+      }
+      .nav-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: color 0.6s ease;
+      }
+      .nav-logo .icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: #3a3530;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .nav-links {
+        display: flex;
+        gap: 32px;
+        list-style: none;
+      }
+      .nav-links a {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.6s ease;
+        letter-spacing: 0.2px;
+      }
+      .nav-links a:hover {
+        color: var(--text-primary);
+      }
+      .nav-cta {
+        padding: 10px 24px;
+        border-radius: 8px;
+        background: #3a3530;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.3s;
+        letter-spacing: 0.2px;
+      }
+      .nav-cta:hover {
+        background: #2a2520;
+      }
+
+      /* Day/Night Toggle */
+      .theme-toggle {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 100;
+        width: 56px;
+        height: 28px;
+        border-radius: 14px;
+        border: 1.5px solid rgba(128, 128, 128, 0.25);
+        background: rgba(232, 226, 218, 0.8);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        padding: 0 4px;
+        transition:
+          background 0.4s ease,
+          border-color 0.4s ease;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .theme-toggle.night {
+        background: rgba(26, 24, 40, 0.8);
+        border-color: rgba(100, 120, 200, 0.3);
+      }
+      .theme-toggle-knob {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        transition:
+          transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+          background 0.4s ease;
+        transform: translateX(0px);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+      }
+      .theme-toggle.night .theme-toggle-knob {
+        transform: translateX(26px);
+        background: #2a2a3a;
+      }
+
+      /* ===== SECTION BASE ===== */
+      section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 120px 48px 80px;
+        position: relative;
+      }
+
+      /* ===== HERO ===== */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-end;
+        padding-top: 100px;
+        padding-bottom: 60px;
+        position: relative;
+      }
+      .hero-left {
+        width: 50%;
+        max-width: 620px;
+        padding-bottom: 40px;
+      }
+      .hero-left h1 {
+        font-size: clamp(56px, 5vw, 64px);
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--text-primary);
+        letter-spacing: -1.5px;
+        margin-bottom: 32px;
+        transition: color 0.6s ease;
+      }
+      .hero-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 28px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .hero-cta .cta-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 0%;
+        border: 1.5px solid var(--cta-border-color, rgba(42, 37, 32, 0.25));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: var(--text-primary);
+        transition:
+          background 0.3s,
+          border-color 0.3s,
+          color 0.3s;
+        flex-shrink: 0;
+      }
+      .hero-cta:hover .cta-icon {
+        background: var(--text-primary);
+        border-color: var(--text-primary);
+        color: var(--cta-hover-text, #fff);
+      }
+      .hero-cta .cta-label {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-primary);
+        letter-spacing: 0.2px;
+        border-bottom: 1px solid var(--cta-border-color, rgba(42, 37, 32, 0.3));
+        padding-bottom: 2px;
+        transition:
+          border-color 0.3s,
+          color 0.6s ease;
+      }
+      .hero-cta:hover .cta-label {
+        border-color: var(--text-primary);
+      }
+      .hero-left .hero-desc {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.75;
+        color: var(--text-secondary);
+        max-width: 420px;
+        margin-bottom: 32px;
+        transition: color 0.6s ease;
+      }
+      .hero-avatars {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      .hero-avatars .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(58, 53, 48, 0.15);
+        border: 2.5px solid #e8e2da;
+        margin-right: -10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: #5a5550;
+        overflow: hidden;
+        position: relative;
+      }
+      .hero-avatars .avatar:nth-child(1) {
+        background: #c4b8a8;
+        z-index: 5;
+      }
+      .hero-avatars .avatar:nth-child(2) {
+        background: #a89888;
+        z-index: 4;
+      }
+      .hero-avatars .avatar:nth-child(3) {
+        background: #b8a898;
+        z-index: 3;
+      }
+      .hero-avatars .avatar:nth-child(4) {
+        background: #d0c4b4;
+        z-index: 2;
+      }
+      .hero-avatars .avatar:nth-child(5) {
+        background: #bab0a0;
+        z-index: 1;
+      }
+      .hero-avatars .avatar-text {
+        font-size: 13px;
+        color: #6a6560;
+        margin-left: 18px;
+        font-weight: 400;
+        letter-spacing: 0.1px;
+        margin-right: 0;
+        border: none;
+        background: none;
+        line-height: 1.4;
+      }
+      /* Right side is empty — 3D scene shows through */
+      .hero-right {
+        width: 50%;
+      }
+      /* Discover more — vertical label on right edge */
+      .hero-discover {
+        position: absolute;
+        right: 28px;
+        bottom: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        z-index: 10;
+      }
+      .hero-discover .discover-text {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-muted);
+        letter-spacing: 1.5px;
+        text-transform: capitalize;
+        transition: color 0.6s ease;
+      }
+      .hero-discover .discover-arrow {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1.5px solid var(--cta-border-color, rgba(42, 37, 32, 0.2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition:
+          background 0.3s,
+          color 0.3s,
+          border-color 0.3s;
+      }
+      .hero-discover .discover-arrow:hover {
+        background: var(--text-primary);
+        color: var(--cta-hover-text, #fff);
+        border-color: var(--text-primary);
+      }
+
+      /* ===== STATS / QUOTE SECTION ===== */
+      .stats-section {
+        background: transparent;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 100px 48px 60px;
+      }
+      .stats-row {
+        display: flex;
+        align-items: center;
+        gap: 60px;
+        margin-bottom: 60px;
+      }
+      .stats-left {
+        width: 45%;
+        /* 3D scene shows through here */
+      }
+      .stats-right {
+        width: 55%;
+      }
+      .stats-right .quote {
+        font-size: clamp(32px, 3vw, 34px);
+        font-weight: 700;
+        line-height: 1.35;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        margin-bottom: 48px;
+        transition: color 0.6s ease;
+      }
+      .stats-right .quote span {
+        color: #2a2520;
+      }
+      .stats-grid {
+        display: flex;
+        gap: 40px;
+      }
+      .stat-item .stat-num {
+        font-size: 88px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -1px;
+        line-height: 1;
+        transition: color 0.6s ease;
+      }
+      .stat-item .stat-num sup {
+        font-size: 32px;
+        font-weight: 600;
+        vertical-align: top;
+        margin-left: 2px;
+      }
+      .stat-item .stat-label {
+        font-size: 16px;
+        font-weight: 400;
+        color: var(--text-muted);
+        margin-top: 8px;
+        letter-spacing: 0.3px;
+        line-height: 1.4;
+        transition: color 0.6s ease;
+      }
+
+      /* Partner logos */
+      .partners-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 48px;
+        padding: 40px 0 0;
+        border-top: 1px solid rgba(128, 128, 128, 0.15);
+        margin-top: 20px;
+        transition: border-color 0.6s ease;
+      }
+      .partners-bar .partner {
+        font-size: 16px;
+        font-weight: 600;
+        color: #aaa59e;
+        letter-spacing: 0.5px;
+        transition: color 0.3s;
+      }
+      .partners-bar .partner:hover {
+        color: #6a6560;
+      }
+
+      /* ===== SERVICES SECTION ===== */
+      .services-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 100px 48px;
+        background: transparent;
+      }
+      .services-left {
+        width: 30%;
+        /* 3D scene shows through here */
+      }
+      .services-right {
+        max-width: 560px;
+        padding-left: 0;
+        padding-right: 60px;
+      }
+      .services-right .section-quote {
+        font-size: clamp(32px, 3vw, 34px);
+        font-weight: 700;
+        line-height: 1.35;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        margin-bottom: 16px;
+        transition: color 0.6s ease;
+      }
+      .services-right .section-desc {
+        font-size: 18px;
+        font-weight: 400;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 40px;
+        max-width: 440px;
+        transition: color 0.6s ease;
+      }
+      .service-list {
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .service-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+        cursor: pointer;
+        transition:
+          padding-left 0.3s,
+          border-color 0.6s ease;
+      }
+      .service-item:first-child {
+        border-top: 1px solid rgba(0, 0, 0, 0.07);
+      }
+      .service-item:hover {
+        padding-left: 12px;
+      }
+      .service-item .svc-name {
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--text-primary);
+        transition: color 0.6s ease;
+      }
+      .service-item .svc-arrow {
+        font-size: 18px;
+        color: #aaa59e;
+        transition:
+          transform 0.3s,
+          color 0.3s;
+      }
+      .service-item:hover .svc-arrow {
+        transform: translateX(4px);
+        color: #2a2520;
+      }
+
+      /* ===== SUPPLY CHAIN SECTION ===== */
+      .supply-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 100px 48px;
+        background: transparent;
+      }
+      .supply-left {
+        width: 55%;
+      }
+      .supply-left .supply-tag {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: rgba(58, 53, 48, 0.08);
+        font-size: 12px;
+        font-weight: 500;
+        color: #6a6560;
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+      }
+      .supply-left h2 {
+        font-size: clamp(30px, 4vw, 50px);
+        font-weight: 800;
+        line-height: 1.15;
+        color: var(--text-primary);
+        letter-spacing: -1px;
+        margin-bottom: 36px;
+        transition: color 0.6s ease;
+      }
+      .supply-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .supply-item {
+        padding: 18px 0;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+        transition:
+          padding-left 0.3s,
+          border-color 0.6s ease;
+        cursor: pointer;
+      }
+      .supply-item:first-child {
+        border-top: 1px solid rgba(128, 128, 128, 0.15);
+      }
+      .supply-item:hover {
+        padding-left: 12px;
+      }
+      .supply-item .supply-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+        transition: color 0.6s ease;
+      }
+      .supply-item .supply-desc {
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--text-muted);
+        line-height: 1.5;
+        transition: color 0.6s ease;
+      }
+      .supply-right {
+        width: 45%;
+      }
+
+      /* ===== FOOTER ===== */
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 36px 48px;
+        background: #3a3530;
+        color: #b0a998;
+        font-size: 13px;
+        position: relative;
+        z-index: 20;
+      }
+      .footer-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 16px;
+        color: #e8e2da;
+      }
+      .footer-logo .icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: #5a5550;
+        color: #e8e2da;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .footer-socials {
+        display: flex;
+        gap: 16px;
+      }
+      .footer-socials a {
+        color: #8a8580;
+        text-decoration: none;
+        font-size: 13px;
+        transition: color 0.3s;
+      }
+      .footer-socials a:hover {
+        color: #e8e2da;
+      }
+      .footer-cols {
+        display: flex;
+        gap: 60px;
+      }
+      .footer-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .footer-col .col-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #8a8580;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+      }
+      .footer-col a {
+        font-size: 13px;
+        color: #b0a998;
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+      .footer-col a:hover {
+        color: #e8e2da;
+      }
+      .footer-bottom {
+        font-size: 12px;
+        color: #6a6560;
+      }
+
+      /* ===== ANIMATIONS ===== */
+      .fade-up {
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity 0.8s ease,
+          transform 0.8s ease;
+      }
+      .fade-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* ===== HERO ENTRANCE ANIMATIONS ===== */
+      .hero-left h1 {
+        opacity: 0;
+        transform: translateX(-60px);
+        animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      }
+      .hero-left .hero-cta {
+        opacity: 0;
+        transform: translateY(24px);
+        animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+      }
+      .hero-left .hero-desc {
+        opacity: 0;
+        transform: translateY(24px);
+        animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.95s forwards;
+      }
+      .hero-left .hero-avatars {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.15s forwards;
+      }
+      .hero-discover {
+        opacity: 0;
+        animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s forwards;
+      }
+      .top-nav {
+        opacity: 0;
+        transform: translateY(-20px);
+        animation: slideDownNav 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+      }
+
+      @keyframes slideInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-60px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes slideDownNav {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Mobile tweaks */
+      @media (max-width: 900px) {
+        section,
+        .hero,
+        .stats-section,
+        .services-section,
+        .supply-section {
+          flex-direction: column;
+          padding: 100px 24px 60px;
+        }
+        .hero-left,
+        .hero-right,
+        .stats-left,
+        .stats-right,
+        .services-left,
+        .services-right,
+        .supply-left,
+        .supply-right {
+          width: 100%;
+        }
+        .stats-row {
+          flex-direction: column;
+        }
+        .services-right {
+          padding-left: 0;
+          margin-top: 40px;
+        }
+        .top-nav {
+          padding: 16px 24px;
+        }
+        .nav-links {
+          display: none;
+        }
+        .stats-grid {
+          gap: 24px;
+        }
+        .footer {
+          flex-wrap: wrap;
+          gap: 24px;
+        }
+        .footer-cols {
+          gap: 32px;
+        }
+      }
+    </style>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js",
+          "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.webgpu.js",
+          "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.tsl.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- 3D canvas (fixed background) -->
+    <div id="root"></div>
+
+    <!-- Day/Night Toggle -->
+    <div class="theme-toggle" id="themeToggle" title="Toggle day/night">
+      <div class="theme-toggle-knob" id="themeKnob">☀️</div>
+    </div>
+
+    <!-- Top Navigation -->
+     <!-- Top Navigation -->
+    <nav class="top-nav">
+      <a class="nav-logo" href="#"> <span class="icon">G</span> Git Bundle </a>
+      <ul class="nav-links">
+        <li><a href="#git_lens">Git Lens</a></li>
+        <li><a href="#git_wrap">Git Wrap</a></li>
+        <li><a href="#git_it_done">Git-it-done</a></li>
+      </ul>
+    </nav>
+
+    <!-- Scrollable page content -->
+    <div class="page-content">
+      <!-- HERO -->
+     <section class="hero" id="git_lens">
+        <div class="hero-left">
+          <h1 class="fade-up">Git Lens<br /></h1>
+          <a class="hero-cta fade-up" href="https://mygitlens.netlify.app/" target="_blank">
+            <span class="cta-icon">↗</span>
+            <span class="cta-label">Understand Any GitHub Repo, Instantly</span>
+          </a>
+          <p class="hero-desc fade-up">
+            Break down complex codebases into interactive insights. Get
+            AI-powered answers, detect critical areas, and contribute with
+            confidence from day one.
+          </p>
+        </div>
+        <div class="hero-right">
+          <!-- 3D scene shows through here -->
+        </div>
+      </section>
+
+      <!-- STATS -->
+       <section class="stats-section" id="git_wrap">
+        <div class="stats-row">
+          <div class="stats-left">
+            <!-- 3D scene shows through -->
+          </div>
+          <div class="hero-left">
+            <h1 class="fade-up">Git Wrap<br /></h1>
+            <a class="hero-cta fade-up" href="https://mygitwrap.netlify.app/" target="_blank">
+              <span class="cta-icon">↗</span>
+              <span class="cta-label">Your GitHub Yearly Wrap</span>
+            </a>
+            <p class="hero-desc fade-up">
+              See your coding story unfold. From commits to contributions,
+              uncover patterns, highlights, and hidden insights from your year
+              on GitHub.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERVICES -->
+        <section class="services-section" id="git_it_done">
+        <div class="services-right">
+          <p class="section-quote fade-up">npm install -g git-it-done</p>
+          <p class="section-desc fade-up">
+            Stop writing commit messages. Start shipping. This CLI analyzes your
+            changes and generates clear, structured commits instantly—wrapped in
+            a fast, delightful terminal experience.
+          </p>
+        </div>
+        <div class="services-left">
+          <!-- 3D scene shows through -->
+        </div>
+      </section>
+    </div>
+
+    </div>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      // Scene setup
+      const scene = new THREE.Scene();
+      scene.background = null;
+
+      const camera = new THREE.PerspectiveCamera(
+        35,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100,
+      );
+      camera.position.set(0, 4.5, 0.5);
+      camera.lookAt(0, 1.2, 0);
+
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setClearColor(0x000000, 0);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1;
+
+      document.body.style.margin = "0";
+      const root = document.getElementById("root");
+      root.appendChild(renderer.domElement);
+
+      // --- Parallax camera offset driven by mouse position ---
+      let dragOffsetX = 0,
+        dragOffsetY = 0;
+      let targetDragOffsetX = 0,
+        targetDragOffsetY = 0;
+      const parallaxStrength = 0.156; // max offset in radians
+
+      window.addEventListener("mousemove", (e) => {
+        // Normalize mouse position to -1..1 (center = 0)
+        const nx = (e.clientX / window.innerWidth) * 2 - 1;
+        const ny = (e.clientY / window.innerHeight) * 2 - 1;
+        // Invert: mouse left → camera right, mouse up → camera down
+        targetDragOffsetX = -nx * parallaxStrength;
+        targetDragOffsetY = -ny * parallaxStrength * 0.5;
+      });
+
+      renderer.domElement.style.cursor = "default";
+
+      // ======= 3D Scene Group (we move this based on scroll) =======
+      const sceneGroup = new THREE.Group();
+      sceneGroup.name = "mainSceneGroup";
+      sceneGroup.position.set(-0.4, -0.55, 1.2);
+      sceneGroup.rotation.set(0, (-25.6 * Math.PI) / 180, 0);
+      scene.add(sceneGroup);
+
+      // Materials — warm neutral palette
+      const deskMat = new THREE.MeshStandardMaterial({
+        color: 0xe8e2d8,
+        roughness: 0.3,
+        metalness: 0.05,
+      });
+      const legMat = new THREE.MeshStandardMaterial({
+        color: 0xd8d2c8,
+        roughness: 0.2,
+        metalness: 0.15,
+      });
+      const screenMat = new THREE.MeshStandardMaterial({
+        color: 0x2a2a2a,
+        roughness: 0.1,
+        metalness: 0.5,
+      });
+      const skinMat = new THREE.MeshStandardMaterial({
+        color: 0xe0b99a,
+        roughness: 0.6,
+      });
+      const hairMat = new THREE.MeshStandardMaterial({
+        color: 0x6b5a42,
+        roughness: 0.9,
+      });
+      const shirtMat = new THREE.MeshStandardMaterial({
+        color: 0xf0ebe4,
+        roughness: 0.6,
+      });
+      const pantsMat = new THREE.MeshStandardMaterial({
+        color: 0x3d3a35,
+        roughness: 0.8,
+      });
+      const chairMat = new THREE.MeshStandardMaterial({
+        color: 0x5a5550,
+        roughness: 0.6,
+      });
+      const plantGreenMat = new THREE.MeshStandardMaterial({
+        color: 0x6b8f5e,
+        roughness: 0.7,
+      });
+      const plantDarkMat = new THREE.MeshStandardMaterial({
+        color: 0x4a6e3e,
+        roughness: 0.7,
+      });
+      const potMat = new THREE.MeshStandardMaterial({
+        color: 0x7a756e,
+        roughness: 0.8,
+      });
+      const potWhiteMat = new THREE.MeshStandardMaterial({
+        color: 0xc8c2b8,
+        roughness: 0.6,
+      });
+      const lampMat = new THREE.MeshStandardMaterial({
+        color: 0xd5d0c8,
+        roughness: 0.3,
+        metalness: 0.2,
+      });
+
+      // Platform
+      const platformGroup = new THREE.Group();
+      platformGroup.name = "platform";
+
+      const platformBase = new THREE.Mesh(
+        new THREE.CylinderGeometry(3, 3.2, 0.3, 64),
+        new THREE.MeshStandardMaterial({
+          color: 0xb0a998,
+          roughness: 0.5,
+          metalness: 0.1,
+        }),
+      );
+      platformBase.name = "platformBase";
+      platformBase.position.y = 0.15;
+      platformBase.receiveShadow = true;
+      platformGroup.add(platformBase);
+
+      const platformTop = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.7, 2.8, 0.15, 64),
+        new THREE.MeshStandardMaterial({
+          color: 0xc0b8a8,
+          roughness: 0.4,
+          metalness: 0.05,
+        }),
+      );
+      platformTop.name = "platformTop";
+      platformTop.position.y = 0.375;
+      platformTop.receiveShadow = true;
+      platformGroup.add(platformTop);
+
+      const rimGeo = new THREE.TorusGeometry(3.0, 0.02, 8, 64);
+      const rimMat = new THREE.MeshStandardMaterial({
+        color: 0xd0c8b8,
+        emissive: 0xd0c8b8,
+        emissiveIntensity: 0.3,
+      });
+      const rim = new THREE.Mesh(rimGeo, rimMat);
+      rim.name = "platformRim";
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = 0.3;
+      platformGroup.add(rim);
+      sceneGroup.add(platformGroup);
+
+      // Floor
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(50, 50),
+        new THREE.MeshStandardMaterial({ color: 0xd8d2c8, roughness: 0.9 }),
+      );
+      floor.name = "floor";
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      sceneGroup.add(floor);
+
+      // Desk
+      const deskGroup = new THREE.Group();
+      deskGroup.name = "desk";
+      const deskTop = new THREE.Mesh(
+        new THREE.BoxGeometry(2.4, 0.06, 1.0),
+        deskMat,
+      );
+      deskTop.name = "deskTop";
+      deskTop.position.set(0, 1.25, 0);
+      deskTop.castShadow = true;
+      deskTop.receiveShadow = true;
+      deskGroup.add(deskTop);
+
+      const legGeo = new THREE.BoxGeometry(0.05, 0.8, 0.05);
+      [
+        [-1.1, 0.82, -0.42],
+        [1.1, 0.82, -0.42],
+        [-1.1, 0.82, 0.42],
+        [1.1, 0.82, 0.42],
+      ].forEach((p, i) => {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.name = `deskLeg${i}`;
+        leg.position.set(...p);
+        leg.castShadow = true;
+        deskGroup.add(leg);
+      });
+
+      const sidePanelGeo = new THREE.BoxGeometry(0.03, 0.7, 0.84);
+      [-1.1, 1.1].forEach((x, i) => {
+        const panel = new THREE.Mesh(
+          sidePanelGeo,
+          new THREE.MeshStandardMaterial({
+            color: 0xd8d2c8,
+            roughness: 0.3,
+            metalness: 0.05,
+          }),
+        );
+        panel.name = `deskSidePanel${i}`;
+        panel.position.set(x, 0.87, 0);
+        panel.castShadow = true;
+        deskGroup.add(panel);
+      });
+
+      deskGroup.position.set(0, 0, 0);
+      deskGroup.scale.set(1, 1.3, 1);
+      sceneGroup.add(deskGroup);
+
+      // Monitor
+      const monitorGroup = new THREE.Group();
+      monitorGroup.name = "monitor";
+
+      const monitorScreen = new THREE.Mesh(
+        new THREE.BoxGeometry(1.1, 0.65, 0.04),
+        screenMat,
+      );
+      monitorScreen.name = "monitorScreen";
+      monitorScreen.position.set(0, 2.15, -0.25);
+      monitorScreen.castShadow = true;
+      monitorGroup.add(monitorScreen);
+
+      const screenFace = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.04, 0.59),
+        new THREE.MeshStandardMaterial({
+          color: 0x1a1a1a,
+          emissive: 0x222222,
+          emissiveIntensity: 0.2,
+        }),
+      );
+      screenFace.name = "screenFace";
+      screenFace.position.set(0, 2.15, -0.228);
+      monitorGroup.add(screenFace);
+
+      // Clock
+      const clockCanvas = document.createElement("canvas");
+      clockCanvas.width = 512;
+      clockCanvas.height = 256;
+      const clockCtx = clockCanvas.getContext("2d");
+      const clockTexture = new THREE.CanvasTexture(clockCanvas);
+
+      // Accounting dashboard state
+      let dashboardScrollY = 0;
+      let dashboardScrollTarget = 0;
+      let lastScrollChangeTime = 0;
+
+      // Dashboard data
+      const accounts = [
+        { name: "Checking (1234)", balance: "£15,000.00", sub: "Bank balance" },
+        {
+          name: "Mastercard (0987)",
+          balance: "£4,000.00",
+          sub: "Updated 3 days ago",
+        },
+      ];
+
+      const expenseCategories = [
+        { name: "Rent & lease", color: "#5b6abf", pct: 0.28 },
+        { name: "Materials", color: "#e07b54", pct: 0.22 },
+        { name: "Automotive", color: "#d4c054", pct: 0.18 },
+        { name: "Salary & wages", color: "#5baf7a", pct: 0.2 },
+        { name: "Other", color: "#af5b7a", pct: 0.12 },
+      ];
+
+      const invoiceItems = [
+        {
+          client: "BuildCo Ltd",
+          amount: "£3,200.00",
+          status: "Paid",
+          statusColor: "#3a8a5c",
+        },
+        {
+          client: "RoofRight Inc",
+          amount: "£1,800.00",
+          status: "Pending",
+          statusColor: "#c4963a",
+        },
+        {
+          client: "CivEng Partners",
+          amount: "£5,400.00",
+          status: "Paid",
+          statusColor: "#3a8a5c",
+        },
+        {
+          client: "M&E Solutions",
+          amount: "£2,100.00",
+          status: "Overdue",
+          statusColor: "#c44a3a",
+        },
+        {
+          client: "GroundForce Ltd",
+          amount: "£4,750.00",
+          status: "Paid",
+          statusColor: "#3a8a5c",
+        },
+      ];
+
+      function drawRoundedRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      function drawMiniPieChart(ctx, cx, cy, radius, data) {
+        let startAngle = -Math.PI / 2;
+        for (const cat of data) {
+          const sliceAngle = cat.pct * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, radius, startAngle, startAngle + sliceAngle);
+          ctx.closePath();
+          ctx.fillStyle = cat.color;
+          ctx.fill();
+          startAngle += sliceAngle;
+        }
+      }
+
+      function drawBarChart(ctx, x, y, w, h, value, maxVal, color) {
+        // Background bar
+        drawRoundedRect(ctx, x, y, w, h, 3);
+        ctx.fillStyle = "#2a2a38";
+        ctx.fill();
+        // Value bar
+        const barW = (value / maxVal) * w;
+        if (barW > 6) {
+          drawRoundedRect(ctx, x, y, barW, h, 3);
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+      }
+
+      function updateScreenContent(time, headPitchTarget) {
+        const W = 512,
+          H = 256;
+        const ctx = clockCtx;
+
+        // Background
+        ctx.fillStyle = "#f4f1ed";
+        ctx.fillRect(0, 0, W, H);
+
+        // Scroll the dashboard slowly
+        if (time - lastScrollChangeTime > 4.0) {
+          dashboardScrollTarget = (dashboardScrollTarget + 40) % 200;
+          lastScrollChangeTime = time;
+        }
+        dashboardScrollY += (dashboardScrollTarget - dashboardScrollY) * 0.04;
+
+        ctx.save();
+        ctx.translate(0, -dashboardScrollY * 0.3);
+
+        // ===== TOP BAR =====
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, W, 28);
+        ctx.fillStyle = "#1a3a5a";
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText("Good evening, Melissa!", 14, 8);
+
+        // Mini nav pills
+        const pills = ["Work", "Insights", "Books", "Clients"];
+        let px = 14;
+        ctx.font = "7px sans-serif";
+        for (const pill of pills) {
+          const pw = ctx.measureText(pill).width + 14;
+          drawRoundedRect(ctx, px, 22, pw, 13, 6);
+          ctx.fillStyle = "#eae7e2";
+          ctx.fill();
+          ctx.fillStyle = "#5a5a6a";
+          ctx.fillText(pill, px + 7, 25);
+          px += pw + 5;
+        }
+
+        // ===== FIRM AT A GLANCE =====
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "7px sans-serif";
+        ctx.fillText("Firm at a glance", 14, 42);
+
+        // ===== SALES & GET PAID FUNNEL =====
+        const cardY = 52;
+        drawRoundedRect(ctx, 10, cardY, 240, 72, 6);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = "#e0ddd8";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#2a2a3a";
+        ctx.font = "bold 7px sans-serif";
+        ctx.fillText("SALES & GET PAID FUNNEL", 18, cardY + 10);
+
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "6px sans-serif";
+        ctx.fillText("This month", 200, cardY + 10);
+
+        // Funnel stages
+        const stages = [
+          { label: "Not paid", value: "£100", color: "#3a8a5c" },
+          { label: "Paid", value: "£300", color: "#3a8a5c" },
+          { label: "Deposited", value: "£500", color: "#3a8a5c" },
+        ];
+        let sx = 20;
+        for (const stage of stages) {
+          // Green bar on top
+          ctx.fillStyle = stage.color;
+          ctx.fillRect(sx, cardY + 22, 60, 3);
+          ctx.fillStyle = "#8a8a9a";
+          ctx.font = "6px sans-serif";
+          ctx.fillText(stage.label, sx, cardY + 32);
+          ctx.fillStyle = "#2a2a3a";
+          ctx.font = "bold 9px sans-serif";
+          ctx.fillText(stage.value, sx, cardY + 44);
+          sx += 72;
+        }
+
+        // Status badges
+        ctx.font = "5.5px sans-serif";
+        ctx.fillStyle = "#c44a3a";
+        ctx.fillText("⚠ 3 overdue invoices", 20, cardY + 58);
+        ctx.fillStyle = "#c4963a";
+        ctx.fillText("△ 1 deposit on hold", 110, cardY + 58);
+
+        // ===== BANK ACCOUNTS CARD =====
+        drawRoundedRect(ctx, 258, cardY, 244, 72, 6);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = "#e0ddd8";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#2a2a3a";
+        ctx.font = "bold 7px sans-serif";
+        ctx.fillText("BANK ACCOUNTS", 266, cardY + 10);
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "6px sans-serif";
+        ctx.fillText("As of today", 452, cardY + 10);
+
+        ctx.fillStyle = "#1a1a2a";
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillText("£19,342", 266, cardY + 28);
+
+        // Account rows
+        let ay = cardY + 42;
+        for (const acc of accounts) {
+          ctx.fillStyle = "#3a5a8a";
+          ctx.beginPath();
+          ctx.arc(274, ay + 4, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = "#2a2a3a";
+          ctx.font = "bold 6px sans-serif";
+          ctx.fillText(acc.name, 282, ay);
+          ctx.fillStyle = "#8a8a9a";
+          ctx.font = "5.5px sans-serif";
+          ctx.fillText(acc.sub, 282, ay + 9);
+          ctx.fillStyle = "#2a2a3a";
+          ctx.font = "bold 7px sans-serif";
+          ctx.textAlign = "right";
+          ctx.fillText(acc.balance, 494, ay + 3);
+          ctx.textAlign = "left";
+          ay += 22;
+        }
+
+        // ===== PROFIT & LOSS =====
+        const plY = cardY + 82;
+        drawRoundedRect(ctx, 10, plY, 240, 80, 6);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = "#e0ddd8";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#2a2a3a";
+        ctx.font = "bold 7px sans-serif";
+        ctx.fillText("PROFIT & LOSS", 18, plY + 10);
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "6px sans-serif";
+        ctx.fillText("This month", 200, plY + 10);
+
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "6px sans-serif";
+        ctx.fillText("Net profit for March", 18, plY + 22);
+        ctx.fillStyle = "#1a1a2a";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText("£2,900", 18, plY + 36);
+        ctx.fillStyle = "#3a8a5c";
+        ctx.font = "bold 6px sans-serif";
+        ctx.fillText("↑ Up 80% from this time last quarter", 18, plY + 50);
+
+        // Mini bar charts
+        drawBarChart(ctx, 18, plY + 58, 120, 7, 6000, 8000, "#3a8a5c");
+        ctx.fillStyle = "#2a2a3a";
+        ctx.font = "6px sans-serif";
+        ctx.fillText("£6,000  Income", 145, plY + 64);
+
+        drawBarChart(ctx, 18, plY + 68, 120, 7, 3100, 8000, "#4a6abf");
+        ctx.fillStyle = "#2a2a3a";
+        ctx.fillText("£3,100  Expense", 145, plY + 74);
+
+        // ===== EXPENSES =====
+        drawRoundedRect(ctx, 258, plY, 244, 80, 6);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = "#e0ddd8";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#2a2a3a";
+        ctx.font = "bold 7px sans-serif";
+        ctx.fillText("EXPENSES", 266, plY + 10);
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "6px sans-serif";
+        ctx.fillText("This month", 452, plY + 10);
+
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "6px sans-serif";
+        ctx.fillText("Spending for March", 266, plY + 22);
+        ctx.fillStyle = "#1a1a2a";
+        ctx.font = "bold 14px sans-serif";
+        ctx.fillText("£2,900", 266, plY + 36);
+        ctx.fillStyle = "#c44a3a";
+        ctx.font = "bold 6px sans-serif";
+        ctx.fillText("↑ Up 34% from this time last month", 266, plY + 50);
+
+        // Pie chart
+        drawMiniPieChart(ctx, 310, plY + 68, 14, expenseCategories);
+
+        // Legend
+        let ly = plY + 56;
+        ctx.font = "5.5px sans-serif";
+        for (const cat of expenseCategories) {
+          ctx.fillStyle = cat.color;
+          ctx.fillRect(340, ly, 5, 5);
+          ctx.fillStyle = "#5a5a6a";
+          ctx.fillText(cat.name, 348, ly + 5);
+          ly += 9;
+        }
+
+        // ===== RECENT INVOICES (scrollable area) =====
+        const invY = plY + 90;
+        drawRoundedRect(ctx, 10, invY, 492, 75, 6);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = "#e0ddd8";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#2a2a3a";
+        ctx.font = "bold 7px sans-serif";
+        ctx.fillText("RECENT INVOICES", 18, invY + 10);
+
+        // Table header
+        ctx.fillStyle = "#8a8a9a";
+        ctx.font = "bold 6px sans-serif";
+        ctx.fillText("Client", 18, invY + 22);
+        ctx.fillText("Amount", 200, invY + 22);
+        ctx.fillText("Status", 320, invY + 22);
+
+        // Invoice rows
+        let iy = invY + 32;
+        for (let idx = 0; idx < invoiceItems.length && iy < invY + 72; idx++) {
+          const inv = invoiceItems[idx];
+          // Separator
+          ctx.strokeStyle = "#eae7e2";
+          ctx.lineWidth = 0.3;
+          ctx.beginPath();
+          ctx.moveTo(18, iy - 2);
+          ctx.lineTo(494, iy - 2);
+          ctx.stroke();
+
+          ctx.fillStyle = "#2a2a3a";
+          ctx.font = "6.5px sans-serif";
+          ctx.fillText(inv.client, 18, iy + 4);
+          ctx.font = "bold 6.5px sans-serif";
+          ctx.fillText(inv.amount, 200, iy + 4);
+
+          // Status badge
+          drawRoundedRect(ctx, 318, iy - 2, 40, 11, 4);
+          ctx.fillStyle = inv.statusColor + "22";
+          ctx.fill();
+          ctx.fillStyle = inv.statusColor;
+          ctx.font = "bold 5.5px sans-serif";
+          ctx.fillText(inv.status, 324, iy + 5);
+
+          iy += 14;
+        }
+
+        ctx.restore();
+
+        // Cursor blink overlay — subtle mouse pointer
+        const blink = Math.floor(Date.now() / 600) % 2;
+        if (blink) {
+          const cursorX = 180 + Math.sin(time * 0.8) * 60;
+          const cursorY = 120 + Math.sin(time * 0.5) * 40;
+          ctx.fillStyle = "#2a2a3a";
+          ctx.beginPath();
+          ctx.moveTo(cursorX, cursorY);
+          ctx.lineTo(cursorX, cursorY + 10);
+          ctx.lineTo(cursorX + 4, cursorY + 7);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Mini clock top-right
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, "0");
+        const minutes = now.getMinutes().toString().padStart(2, "0");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(W - 50, 0, 50, 14);
+        ctx.fillStyle = "#5a5a6a";
+        ctx.font = "7px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`${hours}:${minutes}`, W - 6, 10);
+        ctx.textAlign = "left";
+
+        clockTexture.needsUpdate = true;
+      }
+
+      const clockScreen = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.0, 0.55),
+        new THREE.MeshBasicMaterial({ map: clockTexture }),
+      );
+      clockScreen.name = "clockScreen";
+      clockScreen.position.set(0, 2.15, -0.225);
+      monitorGroup.add(clockScreen);
+
+      const standNeck = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.3, 0.08),
+        legMat,
+      );
+      standNeck.name = "standNeck";
+      standNeck.position.set(0, 1.7, -0.25);
+      monitorGroup.add(standNeck);
+
+      const standBase = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.15, 0.2, 0.04, 16),
+        legMat,
+      );
+      standBase.name = "standBase";
+      standBase.position.set(0, 1.56, -0.25);
+      monitorGroup.add(standBase);
+
+      monitorGroup.position.set(0, 0.023, 0);
+      sceneGroup.add(monitorGroup);
+
+      // Desk lamp
+      const lampGroup = new THREE.Group();
+      lampGroup.name = "lamp";
+      const lampBase2 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.1, 0.04, 16),
+        lampMat,
+      );
+      lampBase2.name = "lampBase";
+      lampBase2.position.set(0.85, 1.65, -0.2);
+      lampGroup.add(lampBase2);
+
+      const lampArm1 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.015, 0.015, 0.5, 8),
+        lampMat,
+      );
+      lampArm1.name = "lampArm1";
+      lampArm1.position.set(0.85, 1.9, -0.2);
+      lampArm1.rotation.z = 0.15;
+      lampGroup.add(lampArm1);
+
+      const lampArm2 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.015, 0.015, 0.4, 8),
+        lampMat,
+      );
+      lampArm2.name = "lampArm2";
+      lampArm2.position.set(0.78, 2.2, -0.2);
+      lampArm2.rotation.z = -0.6;
+      lampGroup.add(lampArm2);
+
+      const lampHead = new THREE.Mesh(
+        new THREE.ConeGeometry(0.08, 0.15, 8),
+        lampMat,
+      );
+      lampHead.name = "lampHead";
+      lampHead.position.set(0.9, 2.35, -0.1);
+      lampHead.rotation.set((140 * Math.PI) / 180, 0, (197.2 * Math.PI) / 180);
+      lampGroup.add(lampHead);
+
+      // Lamp bulb glow — small emissive sphere inside the lamp head
+      const lampBulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.035, 12, 12),
+        new THREE.MeshStandardMaterial({
+          color: 0xffe8a0,
+          emissive: 0xffcc44,
+          emissiveIntensity: 0,
+          roughness: 0.2,
+          metalness: 0,
+          transparent: true,
+          opacity: 0,
+        }),
+      );
+      lampBulb.name = "lampBulb";
+      lampBulb.position.set(0.88, 2.3, -0.05);
+      lampBulb.scale.setScalar(1.1);
+      lampGroup.add(lampBulb);
+
+      // Lamp cone beam — volumetric light cone
+      const lampConeGeo = new THREE.CylinderGeometry(
+        0.02,
+        0.35,
+        0.9,
+        24,
+        1,
+        true,
+      );
+      const lampConeMat = new THREE.MeshBasicMaterial({
+        color: 0xffdd77,
+        transparent: true,
+        opacity: 0,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const lampCone = new THREE.Mesh(lampConeGeo, lampConeMat);
+      lampCone.name = "lampCone";
+      lampCone.position.set(0.9, 1.82, -0.1);
+      lampCone.visible = false;
+      lampGroup.add(lampCone);
+
+      // Spotlight for actual desk illumination from lamp
+      const lampSpot = new THREE.SpotLight(0xffdd88, 0, 4, Math.PI / 4, 0.7, 2);
+      lampSpot.name = "lampSpot";
+      lampSpot.position.set(0.9, 2.5, -0.1);
+      lampSpot.target.position.set(0.1, 1.3, 0.1);
+      lampSpot.distance = 3;
+      lampSpot.penumbra = 0.8;
+      lampGroup.add(lampSpot);
+      lampGroup.add(lampSpot.target);
+
+      lampGroup.position.set(0, 0.034, 0);
+      sceneGroup.add(lampGroup);
+
+      // Keyboard
+      const keyboard = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.02, 0.22),
+        new THREE.MeshStandardMaterial({ color: 0x4a4540, roughness: 0.5 }),
+      );
+      keyboard.name = "keyboard";
+      keyboard.position.set(0.0, 1.3, 0.1);
+      keyboard.castShadow = true;
+      deskGroup.add(keyboard);
+
+      // Mouse
+      const mouse = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.02, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0xe0dbd2, roughness: 0.3 }),
+      );
+      mouse.name = "mouse";
+      mouse.position.set(0.6, 1.66, 0.15);
+      mouse.scale.set(2, 3, 2);
+      mouse.castShadow = true;
+      sceneGroup.add(mouse);
+
+      // Mug
+      const mug = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 0.035, 0.1, 12),
+        new THREE.MeshStandardMaterial({ color: 0xf0ebe4, roughness: 0.4 }),
+      );
+      mug.name = "mug";
+      mug.position.set(0.9, 1.8, 0.2);
+      mug.scale.set(2, 2.2, 2);
+      mug.castShadow = true;
+      sceneGroup.add(mug);
+
+      // ======= CALCULATOR =======
+      const calcGroup = new THREE.Group();
+      calcGroup.name = "calculator";
+
+      // Calculator body — rounded box shape
+      const calcBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.25, 0.025, 0.45),
+        new THREE.MeshStandardMaterial({
+          color: 0xe8e5e0,
+          roughness: 0.35,
+          metalness: 0.05,
+        }),
+      );
+      calcBody.name = "calcBody";
+      calcBody.castShadow = true;
+      calcBody.receiveShadow = true;
+      calcGroup.add(calcBody);
+
+      // Screen recess
+      const calcScreen = new THREE.Mesh(
+        new THREE.BoxGeometry(0.22, 0.008, 0.07),
+        new THREE.MeshStandardMaterial({
+          color: 0xd4d8cc,
+          roughness: 0.2,
+          metalness: 0.05,
+          emissive: 0xd4d8cc,
+          emissiveIntensity: 0.1,
+        }),
+      );
+      calcScreen.name = "calcScreen";
+      calcScreen.position.set(0, 0.016, -0.145);
+      calcGroup.add(calcScreen);
+
+      // Screen digits
+      const calcDigitCanvas = document.createElement("canvas");
+      calcDigitCanvas.width = 256;
+      calcDigitCanvas.height = 64;
+      const calcDigitCtx = calcDigitCanvas.getContext("2d");
+      const calcDigitTexture = new THREE.CanvasTexture(calcDigitCanvas);
+
+      // Cycling calculator display values
+      const calcDisplayValues = [
+        "19,342",
+        "2,900",
+        "6,000",
+        "3,100",
+        "24,750",
+        "1,800",
+        "5,400",
+      ];
+      let calcDisplayIndex = 0;
+      let lastCalcChangeTime = 0;
+      const calcCycleDuration = 3.2; // seconds between changes
+
+      function updateCalcDisplay(time) {
+        if (time - lastCalcChangeTime > calcCycleDuration) {
+          calcDisplayIndex = (calcDisplayIndex + 1) % calcDisplayValues.length;
+          lastCalcChangeTime = time;
+        }
+
+        const val = calcDisplayValues[calcDisplayIndex];
+        const ctx = calcDigitCtx;
+        ctx.fillStyle = "#c8ccbf";
+        ctx.fillRect(0, 0, 256, 64);
+        ctx.fillStyle = "#3a3a3a";
+        ctx.font = "bold 36px monospace";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillText(val, 240, 34);
+        calcDigitTexture.needsUpdate = true;
+      }
+
+      // Initial draw
+      updateCalcDisplay(0);
+      const calcScreenFace = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.21, 0.055),
+        new THREE.MeshBasicMaterial({ map: calcDigitTexture }),
+      );
+      calcScreenFace.name = "calcScreenFace";
+      calcScreenFace.rotation.x = -Math.PI / 2;
+      calcScreenFace.position.set(0, 0.021, -0.145);
+      calcGroup.add(calcScreenFace);
+
+      // Button rows
+      const calcBtnMat = new THREE.MeshStandardMaterial({
+        color: 0xdddad5,
+        roughness: 0.4,
+        metalness: 0.05,
+      });
+      const calcBtnGreenMat = new THREE.MeshStandardMaterial({
+        color: 0x4a9a5a,
+        roughness: 0.4,
+        metalness: 0.05,
+      });
+      const calcBtnGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.012, 12);
+      const calcBtnWideGeo = new THREE.BoxGeometry(0.048, 0.012, 0.032);
+      const calcBtnTallGeo = new THREE.BoxGeometry(0.032, 0.012, 0.058);
+
+      // Layout: 6 rows x 4 cols
+      const btnRows = [
+        // row 0: ON/AC (green), GT, ►, ÷
+        [
+          { type: "wide", green: true },
+          { type: "wide" },
+          { type: "wide" },
+          { type: "wide" },
+        ],
+        // row 1: MRC, M+, M-, ×
+        [
+          { type: "wide" },
+          { type: "wide" },
+          { type: "wide" },
+          { type: "wide" },
+        ],
+        // row 2: 7, 8, 9, -
+        [
+          { type: "round" },
+          { type: "round" },
+          { type: "round" },
+          { type: "round" },
+        ],
+        // row 3: 4, 5, 6, +
+        [
+          { type: "round" },
+          { type: "round" },
+          { type: "round" },
+          { type: "round" },
+        ],
+        // row 4: 1, 2, 3, = (tall, spans 2 rows)
+        [
+          { type: "round" },
+          { type: "round" },
+          { type: "round" },
+          { type: "tall" },
+        ],
+        // row 5: 0 (wide), 00, .
+        [
+          { type: "round" },
+          { type: "round" },
+          { type: "round" },
+          { type: "skip" },
+        ],
+      ];
+
+      const startX = -0.075;
+      const startZ = -0.06;
+      const spacingX = 0.055;
+      const spacingZ = 0.05;
+
+      for (let row = 0; row < btnRows.length; row++) {
+        for (let col = 0; col < btnRows[row].length; col++) {
+          const btn = btnRows[row][col];
+          if (btn.type === "skip") continue;
+
+          let mesh;
+          const bx = startX + col * spacingX;
+          const bz = startZ + row * spacingZ;
+
+          if (btn.type === "round") {
+            mesh = new THREE.Mesh(calcBtnGeo, calcBtnMat);
+            mesh.position.set(bx, 0.018, bz);
+          } else if (btn.type === "wide") {
+            mesh = new THREE.Mesh(
+              calcBtnWideGeo,
+              btn.green ? calcBtnGreenMat : calcBtnMat,
+            );
+            mesh.position.set(bx, 0.018, bz);
+          } else if (btn.type === "tall") {
+            mesh = new THREE.Mesh(calcBtnTallGeo, calcBtnMat);
+            mesh.position.set(bx, 0.018, bz + spacingZ * 0.5);
+          }
+
+          if (mesh) {
+            mesh.name = `calcBtn_${row}_${col}`;
+            mesh.castShadow = true;
+            calcGroup.add(mesh);
+          }
+        }
+      }
+
+      // Position calculator on desk — tilted slightly like the photo
+      calcGroup.position.set(-0.6, 1.3, 0.2);
+      calcGroup.rotation.y = (30 * Math.PI) / 180;
+      calcGroup.rotation.x = 0.0;
+      deskGroup.add(calcGroup);
+
+      // Chair
+      const chairGroup = new THREE.Group();
+      chairGroup.name = "chair";
+
+      const seat = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 0.08, 0.45),
+        chairMat,
+      );
+      seat.name = "chairSeat";
+      seat.position.set(0, 1.05, 0.55);
+      seat.castShadow = true;
+      chairGroup.add(seat);
+
+      const chairBack = new THREE.Mesh(
+        new THREE.BoxGeometry(0.48, 0.55, 0.06),
+        chairMat,
+      );
+      chairBack.name = "chairBack";
+      chairBack.position.set(0, 1.37, 0.76);
+      chairBack.castShadow = true;
+      chairGroup.add(chairBack);
+
+      const chairPole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.03, 0.03, 0.45, 8),
+        new THREE.MeshStandardMaterial({
+          color: 0x6a655e,
+          metalness: 0.4,
+          roughness: 0.3,
+        }),
+      );
+      chairPole.name = "chairPole";
+      chairPole.position.set(0, 0.78, 0.55);
+      chairGroup.add(chairPole);
+
+      for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2;
+        const arm = new THREE.Mesh(
+          new THREE.BoxGeometry(0.04, 0.03, 0.3),
+          new THREE.MeshStandardMaterial({
+            color: 0x6a655e,
+            metalness: 0.4,
+            roughness: 0.3,
+          }),
+        );
+        arm.name = `chairArm${i}`;
+        arm.position.set(
+          Math.sin(angle) * 0.12,
+          0.54,
+          Math.cos(angle) * 0.12 + 0.55,
+        );
+        arm.rotation.y = angle;
+        chairGroup.add(arm);
+
+        const wheel = new THREE.Mesh(
+          new THREE.SphereGeometry(0.03, 8, 8),
+          new THREE.MeshStandardMaterial({ color: 0x5a5550, roughness: 0.5 }),
+        );
+        wheel.name = `chairWheel${i}`;
+        wheel.position.set(
+          Math.sin(angle) * 0.25,
+          0.52,
+          Math.cos(angle) * 0.25 + 0.55,
+        );
+        chairGroup.add(wheel);
+      }
+
+      chairGroup.position.set(0, 0.065, 0.15);
+      chairGroup.scale.set(1.25, 1.25, 1.25);
+      sceneGroup.add(chairGroup);
+
+      // Person
+      const personGroup = new THREE.Group();
+      personGroup.name = "person";
+
+      const torso = new THREE.Mesh(
+        new THREE.BoxGeometry(0.42, 0.5, 0.25),
+        shirtMat,
+      );
+      torso.name = "torso";
+      torso.position.set(0, 1.485, 0.5);
+      torso.castShadow = true;
+      personGroup.add(torso);
+
+      const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.14, 16, 16),
+        skinMat,
+      );
+      head.name = "head";
+      head.position.set(0, 1.846, 0.45);
+      head.rotation.set((41.5 * Math.PI) / 180, (15.8 * Math.PI) / 180, 0);
+      head.castShadow = true;
+      personGroup.add(head);
+
+      const hairBack = new THREE.Mesh(
+        new THREE.SphereGeometry(0.155, 16, 16),
+        hairMat,
+      );
+      hairBack.name = "hairBack";
+      hairBack.scale.set(1, 1.1, 0.9);
+      hairBack.position.set(0, 1.9, 0.48);
+      personGroup.add(hairBack);
+
+      const bun = new THREE.Mesh(
+        new THREE.SphereGeometry(0.07, 12, 12),
+        hairMat,
+      );
+      bun.name = "hairBun";
+      bun.position.set(0, 2.02, 0.52);
+      personGroup.add(bun);
+
+      const neck = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.06, 0.12, 8),
+        skinMat,
+      );
+      neck.name = "neck";
+      neck.position.set(0, 1.75, 0.47);
+      personGroup.add(neck);
+
+      const upperArmGeo = new THREE.BoxGeometry(0.1, 0.32, 0.1);
+      const leftUpperArm = new THREE.Mesh(upperArmGeo, shirtMat);
+      leftUpperArm.name = "leftUpperArm";
+      leftUpperArm.position.set(-0.27, 1.42, 0.4);
+      leftUpperArm.rotation.set(
+        (-22.9 * Math.PI) / 180,
+        0,
+        (-0.2 * Math.PI) / 180,
+      );
+      leftUpperArm.castShadow = true;
+      personGroup.add(leftUpperArm);
+
+      const rightUpperArm = new THREE.Mesh(upperArmGeo, shirtMat);
+      rightUpperArm.name = "rightUpperArm";
+      rightUpperArm.position.set(0.27, 1.5, 0.5);
+      rightUpperArm.rotation.set(
+        (-23 * Math.PI) / 180,
+        0,
+        (-0.2 * Math.PI) / 180,
+      );
+      rightUpperArm.castShadow = true;
+      personGroup.add(rightUpperArm);
+
+      const forearmGeo = new THREE.BoxGeometry(0.08, 0.28, 0.08);
+      const leftForearm = new THREE.Mesh(forearmGeo, skinMat);
+      leftForearm.name = "leftForearm";
+      leftForearm.position.set(-0.27, 1.324, 0.3);
+      leftForearm.rotation.set((-68.2 * Math.PI) / 180, 0, 0);
+      leftForearm.castShadow = true;
+      personGroup.add(leftForearm);
+
+      const rightForearm = new THREE.Mesh(forearmGeo, skinMat);
+      rightForearm.name = "rightForearm";
+      rightForearm.position.set(0.27, 1.316, 0.3);
+      rightForearm.rotation.set((-69.3 * Math.PI) / 180, 0, 0);
+      rightForearm.castShadow = true;
+      personGroup.add(rightForearm);
+
+      const handGeo = new THREE.SphereGeometry(0.04, 8, 8);
+      const leftHand = new THREE.Mesh(handGeo, skinMat);
+      leftHand.name = "leftHand";
+      leftHand.position.set(-0.27, 1.306, 0.04);
+      leftHand.scale.setScalar(1.244);
+      personGroup.add(leftHand);
+
+      const rightHand = new THREE.Mesh(handGeo, skinMat);
+      rightHand.name = "rightHand";
+      rightHand.position.set(0.27, 1.294, 0.04);
+      rightHand.scale.setScalar(1.213);
+      personGroup.add(rightHand);
+
+      const thighGeo = new THREE.BoxGeometry(0.16, 0.12, 0.4);
+      const leftThigh = new THREE.Mesh(thighGeo, pantsMat);
+      leftThigh.name = "leftThigh";
+      leftThigh.position.set(-0.12, 1.08, 0.45);
+      leftThigh.castShadow = true;
+      personGroup.add(leftThigh);
+
+      const rightThigh = new THREE.Mesh(thighGeo, pantsMat);
+      rightThigh.name = "rightThigh";
+      rightThigh.position.set(0.12, 1.08, 0.45);
+      rightThigh.castShadow = true;
+      personGroup.add(rightThigh);
+
+      const lowerLegGeo = new THREE.BoxGeometry(0.12, 0.38, 0.12);
+      const leftLeg = new THREE.Mesh(lowerLegGeo, pantsMat);
+      leftLeg.name = "leftLeg";
+      leftLeg.position.set(-0.12, 0.82, 0.28);
+      leftLeg.castShadow = true;
+      personGroup.add(leftLeg);
+
+      const rightLeg = new THREE.Mesh(lowerLegGeo, pantsMat);
+      rightLeg.name = "rightLeg";
+      rightLeg.position.set(0.12, 0.82, 0.28);
+      rightLeg.castShadow = true;
+      personGroup.add(rightLeg);
+
+      const footGeo = new THREE.BoxGeometry(0.1, 0.06, 0.18);
+      const footMat = new THREE.MeshStandardMaterial({
+        color: 0x3d3a35,
+        roughness: 0.7,
+      });
+      const leftFoot = new THREE.Mesh(footGeo, footMat);
+      leftFoot.name = "leftFoot";
+      leftFoot.position.set(-0.12, 0.62, 0.24);
+      personGroup.add(leftFoot);
+
+      const rightFoot = new THREE.Mesh(footGeo, footMat);
+      rightFoot.name = "rightFoot";
+      rightFoot.position.set(0.12, 0.62, 0.24);
+      personGroup.add(rightFoot);
+
+      // Glasses
+      const glassesGroup = new THREE.Group();
+      glassesGroup.name = "glasses";
+
+      const glassMat = new THREE.MeshStandardMaterial({
+        color: 0x2a2520,
+        roughness: 0.3,
+        metalness: 0.6,
+      });
+      const lensMat = new THREE.MeshStandardMaterial({
+        color: 0x88bbdd,
+        roughness: 0.1,
+        metalness: 0.2,
+        transparent: true,
+        opacity: 0.25,
+      });
+
+      // Left lens frame
+      const leftFrame = new THREE.Mesh(
+        new THREE.TorusGeometry(0.045, 0.005, 8, 24),
+        glassMat,
+      );
+      leftFrame.name = "glassesLeftFrame";
+      leftFrame.rotation.y = Math.PI / 2;
+      leftFrame.position.set(-0.05, 0, -0.12);
+      glassesGroup.add(leftFrame);
+
+      // Right lens frame
+      const rightFrame = new THREE.Mesh(
+        new THREE.TorusGeometry(0.045, 0.005, 8, 24),
+        glassMat,
+      );
+      rightFrame.name = "glassesRightFrame";
+      rightFrame.rotation.set(0, 0, 0);
+      rightFrame.position.set(0.05, 0, -0.1);
+      glassesGroup.add(rightFrame);
+
+      // Left lens
+      const leftLens = new THREE.Mesh(
+        new THREE.CircleGeometry(0.044, 24),
+        lensMat,
+      );
+      leftLens.name = "glassesLeftLens";
+      leftLens.rotation.set((90 * Math.PI) / 180, 0, 0);
+      leftLens.position.set(-0.05, 0, -0.12);
+      glassesGroup.add(leftLens);
+
+      // Right lens
+      const rightLens = new THREE.Mesh(
+        new THREE.CircleGeometry(0.044, 24),
+        lensMat,
+      );
+      rightLens.name = "glassesRightLens";
+      rightLens.rotation.set(0, 0, 0);
+      rightLens.position.set(0.05, 0, -0.2);
+      glassesGroup.add(rightLens);
+
+      // Bridge (connects the two lenses)
+      const bridge = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.004, 0.004, 0.04, 6),
+        glassMat,
+      );
+      bridge.name = "glassesBridge";
+      bridge.rotation.z = Math.PI / 2;
+      bridge.position.set(0, 0.01, -0.12);
+      glassesGroup.add(bridge);
+
+      // Left temple arm
+      const leftTemple = new THREE.Mesh(
+        new THREE.BoxGeometry(0.005, 0.005, 0.16),
+        glassMat,
+      );
+      leftTemple.name = "glassesLeftTemple";
+      leftTemple.position.set(-0.095, 0.005, -0.04);
+      glassesGroup.add(leftTemple);
+
+      // Right temple arm
+      const rightTemple = new THREE.Mesh(
+        new THREE.BoxGeometry(0.005, 0.005, 0.16),
+        glassMat,
+      );
+      rightTemple.name = "glassesRightTemple";
+      rightTemple.position.set(0.095, 0.005, -0.04);
+      glassesGroup.add(rightTemple);
+
+      // Position glasses on head
+      glassesGroup.position.set(0, 1.829, 0.45);
+      glassesGroup.rotation.set(
+        (41.5 * Math.PI) / 180,
+        (9.5 * Math.PI) / 180,
+        0,
+      );
+      glassesGroup.visible = false;
+      personGroup.add(glassesGroup);
+
+      personGroup.position.set(0, 0.068, 0.12);
+      personGroup.scale.set(1.25, 1.25, 1.25);
+      personGroup.rotation.x = -0.05;
+      sceneGroup.add(personGroup);
+
+      // Plants
+      function createPlant(x, z, scale, type) {
+        const pg = new THREE.Group();
+        const pot = new THREE.Mesh(
+          new THREE.CylinderGeometry(
+            0.09 * scale,
+            0.07 * scale,
+            0.14 * scale,
+            12,
+          ),
+          type === 0 ? potMat : potWhiteMat,
+        );
+        pot.name = `pot_${x}_${z}`;
+        pot.position.y = 0.07 * scale;
+        pot.castShadow = true;
+        pg.add(pot);
+
+        const dirt = new THREE.Mesh(
+          new THREE.CylinderGeometry(
+            0.085 * scale,
+            0.085 * scale,
+            0.02 * scale,
+            12,
+          ),
+          new THREE.MeshStandardMaterial({ color: 0x5a4a38, roughness: 1 }),
+        );
+        dirt.name = `dirt_${x}_${z}`;
+        dirt.position.y = 0.14 * scale;
+        pg.add(dirt);
+
+        if (type === 0) {
+          for (let i = 0; i < 6; i++) {
+            const leafMat2 = new THREE.MeshStandardMaterial({
+              color: i % 2 === 0 ? 0x6b8f5e : 0x4a6e3e,
+              roughness: 0.7,
+              side: THREE.DoubleSide,
+            });
+            const leaf = new THREE.Mesh(
+              new THREE.PlaneGeometry(0.15 * scale, 0.35 * scale),
+              leafMat2,
+            );
+            leaf.name = `leaf_${x}_${z}_${i}`;
+            const angle = (i / 6) * Math.PI * 2;
+            leaf.position.set(
+              Math.sin(angle) * 0.05 * scale,
+              0.3 * scale,
+              Math.cos(angle) * 0.05 * scale,
+            );
+            leaf.rotation.y = angle;
+            leaf.rotation.x = -0.3 - Math.random() * 0.3;
+            leaf.castShadow = true;
+            pg.add(leaf);
+          }
+          const stem = new THREE.Mesh(
+            new THREE.CylinderGeometry(
+              0.01 * scale,
+              0.015 * scale,
+              0.25 * scale,
+              6,
+            ),
+            new THREE.MeshStandardMaterial({ color: 0x5a7a4a, roughness: 0.8 }),
+          );
+          stem.name = `stem_${x}_${z}`;
+          stem.position.y = 0.25 * scale;
+          pg.add(stem);
+        } else if (type === 1) {
+          for (let i = 0; i < 8; i++) {
+            const leaf = new THREE.Mesh(
+              new THREE.SphereGeometry(0.06 * scale, 8, 8),
+              i % 2 === 0 ? plantGreenMat : plantDarkMat,
+            );
+            leaf.name = `bushy_${x}_${z}_${i}`;
+            const angle = (i / 8) * Math.PI * 2;
+            leaf.position.set(
+              Math.sin(angle) * 0.05 * scale,
+              0.2 * scale + Math.random() * 0.05 * scale,
+              Math.cos(angle) * 0.05 * scale,
+            );
+            leaf.scale.y = 0.7;
+            leaf.castShadow = true;
+            pg.add(leaf);
+          }
+        } else {
+          for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2;
+            const vineHeight = (0.15 + Math.random() * 0.2) * scale;
+            const vine = new THREE.Mesh(
+              new THREE.CylinderGeometry(
+                0.008 * scale,
+                0.008 * scale,
+                vineHeight,
+                4,
+              ),
+              new THREE.MeshStandardMaterial({
+                color: 0x5a8a4a,
+                roughness: 0.8,
+              }),
+            );
+            vine.name = `vine_${x}_${z}_${i}`;
+            vine.position.set(
+              Math.sin(angle) * 0.04 * scale,
+              0.14 * scale + vineHeight / 2,
+              Math.cos(angle) * 0.04 * scale,
+            );
+            vine.rotation.z = Math.sin(angle) * 0.2;
+            pg.add(vine);
+            for (let j = 0; j < 3; j++) {
+              const smallLeaf = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.06 * scale, 0.04 * scale),
+                new THREE.MeshStandardMaterial({
+                  color: 0x6b9a5f,
+                  roughness: 0.7,
+                  side: THREE.DoubleSide,
+                }),
+              );
+              smallLeaf.name = `vineLeaf_${x}_${z}_${i}_${j}`;
+              smallLeaf.position.set(
+                Math.sin(angle) * 0.06 * scale,
+                0.18 * scale + j * 0.06 * scale,
+                Math.cos(angle) * 0.06 * scale,
+              );
+              smallLeaf.rotation.y = angle + Math.PI / 2;
+              smallLeaf.rotation.z = 0.3;
+              pg.add(smallLeaf);
+            }
+          }
+        }
+
+        pg.position.set(x, 0.45, z);
+        pg.scale.setScalar(scale);
+        return pg;
+      }
+
+      const plants = [];
+      const plant1 = createPlant(-1.6, 0.3, 1.6, 0);
+      plant1.name = "plant1";
+      plant1.position.set(-1.634, 0.529, 0.3);
+      plant1.rotation.set(0, 0, (0.8 * Math.PI) / 180);
+      plant1.visible = false;
+      sceneGroup.add(plant1);
+      plants.push(plant1);
+
+      const plant2 = createPlant(1.5, 0.5, 1.4, 0);
+      plant2.name = "plant2";
+      plant2.position.set(1.527, 0.513, 0.5);
+      plant2.rotation.set(0, 0, (-0.3 * Math.PI) / 180);
+      plant2.visible = false;
+      sceneGroup.add(plant2);
+      plants.push(plant2);
+
+      const plant3 = createPlant(1.2, -0.5, 0.8, 1);
+      plant3.name = "plant3";
+      plant3.position.set(1.2, 0.491, -0.5);
+      plant3.rotation.set(0, 0, (0.5 * Math.PI) / 180);
+      plant3.visible = false;
+      sceneGroup.add(plant3);
+      plants.push(plant3);
+
+      const plant4 = createPlant(-1.0, 0.8, 0.7, 2);
+      plant4.name = "plant4";
+      plant4.position.set(1.7, 0.545, 0.1);
+      plant4.rotation.set(0, 0, (-0.7 * Math.PI) / 180);
+      plant4.scale.setScalar(5);
+      sceneGroup.add(plant4);
+      plants.push(plant4);
+
+      const plant5 = createPlant(0.6, 0.9, 0.6, 1);
+      plant5.name = "plant5";
+      plant5.position.set(1.4, 0.5, -0.5);
+      plant5.rotation.set(0, 0, (0.5 * Math.PI) / 180);
+      plant5.visible = false;
+      plant5.scale.setScalar(4);
+      sceneGroup.add(plant5);
+      plants.push(plant5);
+
+      const plant6 = createPlant(-0.5, -0.7, 0.5, 2);
+      plant6.name = "plant6";
+      plant6.position.set(-0.523, 0.536, -0.7);
+      plant6.rotation.set(0, 0, (-0.4 * Math.PI) / 180);
+      plant6.visible = false;
+      sceneGroup.add(plant6);
+      plants.push(plant6);
+
+      const deskPlant = createPlant(-0.9, -0.1, 0.5, 1);
+      deskPlant.name = "deskPlant";
+      deskPlant.position.set(-0.9, 1.6, -0.1);
+      deskPlant.scale.setScalar(1.5);
+      sceneGroup.add(deskPlant);
+
+      // Glow ring
+      const glowRing = new THREE.Mesh(
+        new THREE.RingGeometry(2.65, 2.75, 64),
+        new THREE.MeshStandardMaterial({
+          color: 0xd0c8b8,
+          emissive: 0xd0c8b8,
+          emissiveIntensity: 0.15,
+          transparent: true,
+          opacity: 0.35,
+          side: THREE.DoubleSide,
+        }),
+      );
+      glowRing.name = "glowRing";
+      glowRing.rotation.x = -Math.PI / 2;
+      glowRing.position.y = 0.31;
+      sceneGroup.add(glowRing);
+
+      // Dust particles
+      const dustCount = 120;
+      const dustGeo = new THREE.BufferGeometry();
+      const dustPositions = new Float32Array(dustCount * 3);
+      const dustSizes = new Float32Array(dustCount);
+      const dustSpeeds = new Float32Array(dustCount * 3);
+
+      for (let i = 0; i < dustCount; i++) {
+        const dist = Math.random() * 2.5;
+        const spread = dist * 0.4;
+        dustPositions[i * 3] = (Math.random() - 0.5) * spread;
+        dustPositions[i * 3 + 1] = 1.4 + Math.random() * 1.4;
+        dustPositions[i * 3 + 2] = -0.2 + dist * 0.5;
+        dustSizes[i] = 0.8 + Math.random() * 1.5;
+        dustSpeeds[i * 3] = (Math.random() - 0.5) * 0.02;
+        dustSpeeds[i * 3 + 1] = (Math.random() - 0.5) * 0.01;
+        dustSpeeds[i * 3 + 2] = (Math.random() - 0.5) * 0.015;
+      }
+
+      dustGeo.setAttribute(
+        "position",
+        new THREE.BufferAttribute(dustPositions, 3),
+      );
+      dustGeo.setAttribute("size", new THREE.BufferAttribute(dustSizes, 1));
+
+      const dustMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uColor: { value: new THREE.Color(0xd8d0c0) },
+          uOpacity: { value: 0.2 },
+        },
+        vertexShader: `
+    attribute float size;
+    uniform float uTime;
+    varying float vAlpha;
+    void main() {
+      vec3 pos = position;
+      float dist = length(pos.xz - vec2(0.0, -0.2));
+      vAlpha = smoothstep(2.8, 0.0, dist) * smoothstep(1.3, 1.8, pos.y);
+      vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = size * (80.0 / -mvPos.z);
+      gl_Position = projectionMatrix * mvPos;
+    }
+  `,
+        fragmentShader: `
+    uniform vec3 uColor;
+    uniform float uOpacity;
+    varying float vAlpha;
+    void main() {
+      float d = length(gl_PointCoord - 0.5) * 2.0;
+      float alpha = smoothstep(1.0, 0.0, d);
+      gl_FragColor = vec4(uColor, alpha * vAlpha * uOpacity);
+    }
+  `,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+
+      const dustParticles = new THREE.Points(dustGeo, dustMaterial);
+      dustParticles.name = "dustParticles";
+      dustParticles.position.set(0, 0.068, 0);
+      dustParticles.visible = false;
+      sceneGroup.add(dustParticles);
+
+      // ======= LIGHTING =======
+      const keyLight = new THREE.DirectionalLight(0xfff0e0, 1.8);
+      keyLight.name = "keyLight";
+      keyLight.position.set(2, 6, 4);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.set(1024, 1024);
+      keyLight.shadow.radius = 6;
+      keyLight.shadow.camera.near = 0.5;
+      keyLight.shadow.camera.far = 15;
+      keyLight.shadow.camera.left = -4;
+      keyLight.shadow.camera.right = 4;
+      keyLight.shadow.camera.top = 4;
+      keyLight.shadow.camera.bottom = -4;
+      keyLight.shadow.bias = -0.001;
+      keyLight.shadow.normalBias = 0.02;
+      scene.add(keyLight);
+
+      const screenLight = new THREE.PointLight(0xe8e0d4, 1.2, 4);
+      screenLight.name = "screenLight";
+      screenLight.position.set(0, 2.1, 0.0);
+      sceneGroup.add(screenLight);
+
+      const fillLight = new THREE.PointLight(0xd8d0c0, 0.6, 8);
+      fillLight.name = "fillLight";
+      fillLight.position.set(-3, 3, 2);
+      sceneGroup.add(fillLight);
+
+      const lampLight = new THREE.PointLight(0xffe8c0, 0.8, 3);
+      lampLight.name = "lampLight";
+      lampLight.position.set(0.9, 2.3, -0.2);
+      lampLight.castShadow = true;
+      lampLight.shadow.mapSize.set(512, 512);
+      scene.add(lampLight);
+
+      const rimLight = new THREE.PointLight(0xd0c8b8, 0.5, 6);
+      rimLight.name = "rimLight";
+      rimLight.position.set(0, 2, -3);
+      scene.add(rimLight);
+
+      const ambientLight = new THREE.AmbientLight(0xc8c0b0, 0.6);
+      ambientLight.name = "ambient";
+      scene.add(ambientLight);
+
+      // Screen face light — blue SpotLight from monitor aimed at person's face (night only)
+      const screenFaceLight = new THREE.SpotLight(
+        0x4488ff,
+        0,
+        3,
+        Math.PI / 6,
+        0.45,
+        2.0,
+      );
+      screenFaceLight.name = "screenFaceLight";
+      screenFaceLight.position.set(0, 2.15, -0.15);
+      screenFaceLight.target.position.set(0, 1.85, 0.5);
+      sceneGroup.add(screenFaceLight);
+      sceneGroup.add(screenFaceLight.target);
+
+      // Secondary bounce fill from screen — softer, wider, from below monitor
+      const screenBounceLight = new THREE.PointLight(0x3366cc, 0, 1.8);
+      screenBounceLight.name = "screenBounceLight";
+      screenBounceLight.position.set(0, 1.6, 0.0);
+      sceneGroup.add(screenBounceLight);
+
+      const hemiLight = new THREE.HemisphereLight(0xe8e0d4, 0x8a8378, 0.5);
+      hemiLight.name = "hemi";
+      scene.add(hemiLight);
+
+      // ======= DAY/NIGHT THEME COLORS =======
+      const dayTheme = {
+        ambient: new THREE.Color(0xc8c0b0),
+        ambientIntensity: 0.6,
+        hemiSky: new THREE.Color(0xe8e0d4),
+        hemiGround: new THREE.Color(0x8a8378),
+        hemiIntensity: 0.5,
+        keyColor: new THREE.Color(0xfff0e0),
+        keyIntensity: 1.8,
+        screenColor: new THREE.Color(0xe8e0d4),
+        screenIntensity: 1.2,
+        fillColor: new THREE.Color(0xd8d0c0),
+        fillIntensity: 0.6,
+        lampColor: new THREE.Color(0xffe8c0),
+        lampIntensity: 0.8,
+        rimColor: new THREE.Color(0xd0c8b8),
+        rimIntensity: 0.5,
+        bgGradientTop: "#f0ebe3",
+        bgGradientBottom: "#d4cdc3",
+        navBg: "rgba(232,226,218,0.85)",
+        dustOpacity: 0.2,
+        toneExposure: 1,
+      };
+
+      const nightTheme = {
+        ambient: new THREE.Color(0x1a1828),
+        ambientIntensity: 0.25,
+        hemiSky: new THREE.Color(0x0a0a1a),
+        hemiGround: new THREE.Color(0x060610),
+        hemiIntensity: 0.15,
+        keyColor: new THREE.Color(0x2233aa),
+        keyIntensity: 0.3,
+        screenColor: new THREE.Color(0x6688ff),
+        screenIntensity: 2.8,
+        fillColor: new THREE.Color(0x1a1a3a),
+        fillIntensity: 0.15,
+        lampColor: new THREE.Color(0xffcc66),
+        lampIntensity: 2.2,
+        rimColor: new THREE.Color(0x3344aa),
+        rimIntensity: 0.8,
+        bgGradientTop: "#0d0d1a",
+        bgGradientBottom: "#1a1a2e",
+        navBg: "rgba(13,13,26,0.9)",
+        dustOpacity: 0.45,
+        toneExposure: 1.0,
+      };
+
+      function lerpColor(colorA, colorB, t) {
+        const result = colorA.clone();
+        result.lerp(colorB, t);
+        return result;
+      }
+
+      let currentNightMix = 0;
+      let targetNightMix = 0;
+
+      function applyTheme(mix) {
+        const day = dayTheme;
+        const night = nightTheme;
+
+        ambientLight.color.copy(lerpColor(day.ambient, night.ambient, mix));
+        ambientLight.intensity = lerpVal(
+          day.ambientIntensity,
+          night.ambientIntensity,
+          mix,
+        );
+
+        hemiLight.color.copy(lerpColor(day.hemiSky, night.hemiSky, mix));
+        hemiLight.groundColor.copy(
+          lerpColor(day.hemiGround, night.hemiGround, mix),
+        );
+        hemiLight.intensity = lerpVal(
+          day.hemiIntensity,
+          night.hemiIntensity,
+          mix,
+        );
+
+        keyLight.color.copy(lerpColor(day.keyColor, night.keyColor, mix));
+        keyLight.intensity = lerpVal(day.keyIntensity, night.keyIntensity, mix);
+
+        screenLight.color.copy(
+          lerpColor(day.screenColor, night.screenColor, mix),
+        );
+        // screenLight intensity handled in animate with flicker, we adjust base
+        screenLight.userData.baseIntensity = lerpVal(
+          day.screenIntensity,
+          night.screenIntensity,
+          mix,
+        );
+
+        fillLight.color.copy(lerpColor(day.fillColor, night.fillColor, mix));
+        fillLight.intensity = lerpVal(
+          day.fillIntensity,
+          night.fillIntensity,
+          mix,
+        );
+
+        lampLight.color.copy(lerpColor(day.lampColor, night.lampColor, mix));
+        lampLight.intensity = lerpVal(
+          day.lampIntensity,
+          night.lampIntensity,
+          mix,
+        );
+
+        // Lamp bulb glow — fade in during night
+        const bulbIntensity = Math.max(0, (mix - 0.3) / 0.7); // starts at 30% night
+        const easedBulb =
+          bulbIntensity * bulbIntensity * (3 - 2 * bulbIntensity);
+        lampBulb.material.emissiveIntensity = easedBulb * 3.0;
+        lampBulb.material.opacity = easedBulb * 0.95;
+
+        // Volumetric light cone
+        lampConeMat.opacity = easedBulb * 0.12;
+        lampConeMat.color.copy(
+          lerpColor(new THREE.Color(0xffdd77), new THREE.Color(0xffcc55), mix),
+        );
+
+        // Spotlight for desk illumination
+        lampSpot.intensity = easedBulb * 4.0;
+
+        rimLight.color.copy(lerpColor(day.rimColor, night.rimColor, mix));
+        rimLight.intensity = lerpVal(day.rimIntensity, night.rimIntensity, mix);
+
+        dustMaterial.uniforms.uOpacity.value = lerpVal(
+          day.dustOpacity,
+          night.dustOpacity,
+          mix,
+        );
+        dustMaterial.uniforms.uColor.value.copy(
+          lerpColor(new THREE.Color(0xd8d0c0), new THREE.Color(0x6688ff), mix),
+        );
+
+        renderer.toneMappingExposure = lerpVal(
+          day.toneExposure,
+          night.toneExposure,
+          mix,
+        );
+
+        // CSS transitions for page background and nav
+        const topR = Math.round(lerpVal(240, 13, mix));
+        const topG = Math.round(lerpVal(235, 13, mix));
+        const topB = Math.round(lerpVal(227, 26, mix));
+        const botR = Math.round(lerpVal(212, 26, mix));
+        const botG = Math.round(lerpVal(205, 26, mix));
+        const botB = Math.round(lerpVal(195, 46, mix));
+        document.body.style.background = `linear-gradient(160deg, rgb(${topR},${topG},${topB}) 0%, rgb(${botR},${botG},${botB}) 100%)`;
+        document.body.style.backgroundAttachment = "fixed";
+
+        const navAlpha = 0.85;
+        const navR = Math.round(lerpVal(232, 13, mix));
+        const navG = Math.round(lerpVal(226, 13, mix));
+        const navB = Math.round(lerpVal(218, 26, mix));
+        const nav = document.querySelector(".top-nav");
+        if (nav) {
+          nav.style.background = `rgba(${navR},${navG},${navB},${navAlpha})`;
+          nav.style.borderBottomColor =
+            mix > 0.5 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+        }
+
+        // Text color shift
+        const textColor = mix > 0.5 ? "#e8e2da" : "#2a2520";
+        const subColor = mix > 0.5 ? "#a09a90" : "#7a756e";
+        const mutedColor = mix > 0.5 ? "#8a8580" : "#5a5550";
+        document.documentElement.style.setProperty("--text-primary", textColor);
+        document.documentElement.style.setProperty(
+          "--text-secondary",
+          subColor,
+        );
+        document.documentElement.style.setProperty("--text-muted", mutedColor);
+
+        // CTA contrast — update border and hover colors for day/night
+        const ctaBorder =
+          mix > 0.5 ? "rgba(232,226,218,0.35)" : "rgba(42,37,32,0.25)";
+        const ctaHoverText = mix > 0.5 ? "#1a1a2e" : "#ffffff";
+        document.documentElement.style.setProperty(
+          "--cta-border-color",
+          ctaBorder,
+        );
+        document.documentElement.style.setProperty(
+          "--cta-hover-text",
+          ctaHoverText,
+        );
+
+        // Monitor screen glow in night mode
+        const screenEmissiveIntensity = lerpVal(0.2, 1.2, mix);
+        screenFace.material.emissive.copy(
+          lerpColor(new THREE.Color(0x222222), new THREE.Color(0x3355cc), mix),
+        );
+        screenFace.material.emissiveIntensity = screenEmissiveIntensity;
+
+        // Screen face light — ramp up in night mode
+        const screenFaceMix = Math.max(0, (mix - 0.2) / 0.8);
+        const easedScreenFace = screenFaceMix * screenFaceMix;
+        screenFaceLight.intensity = easedScreenFace * 1.8;
+        screenFaceLight.color.setHex(0x4488ff);
+
+        // Screen bounce light
+        screenBounceLight.intensity = easedScreenFace * 0.5;
+
+        // Subtle blue tint on skin in night mode
+        const skinNightColor = lerpColor(
+          new THREE.Color(0xe0b99a),
+          new THREE.Color(0xb0a8c0),
+          mix * 0.3,
+        );
+        skinMat.color.copy(skinNightColor);
+
+        // Glow ring brightens at night
+        glowRing.material.emissiveIntensity = lerpVal(0.15, 0.6, mix);
+        glowRing.material.opacity = lerpVal(0.35, 0.6, mix);
+        glowRing.material.emissive.copy(
+          lerpColor(new THREE.Color(0xd0c8b8), new THREE.Color(0x4466cc), mix),
+        );
+
+        // Platform darkens
+        platformBase.material.color.copy(
+          lerpColor(new THREE.Color(0xb0a998), new THREE.Color(0x2a2a38), mix),
+        );
+        platformTop.material.color.copy(
+          lerpColor(new THREE.Color(0xc0b8a8), new THREE.Color(0x3a3a48), mix),
+        );
+      }
+
+      // Initialize screen light userData
+      screenLight.userData = { baseIntensity: dayTheme.screenIntensity };
+
+      // ======= DAY/NIGHT TOGGLE =======
+      let manualThemeOverride = null; // null = scroll-driven, 0 = day, 1 = night
+
+      const toggleBtn = document.getElementById("themeToggle");
+      const toggleKnob = document.getElementById("themeKnob");
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+          if (manualThemeOverride === null || manualThemeOverride < 0.5) {
+            manualThemeOverride = 1;
+            toggleBtn.classList.add("night");
+            toggleKnob.textContent = "🌙";
+          } else {
+            manualThemeOverride = 0;
+            toggleBtn.classList.remove("night");
+            toggleKnob.textContent = "☀️";
+          }
+        });
+      }
+
+      // ======= SCROLL-DRIVEN 3D POSITIONING =======
+      const rotOffset = (20 * Math.PI) / 180; // 20° left
+      const initRotY = (-25.6 * Math.PI) / 180;
+      const sectionConfigs = [
+        {
+          x: 0,
+          y: -0.5,
+          z: 1.8,
+          rotY: initRotY,
+          camX: -2,
+          camY: 2,
+          camZ: 5.0,
+          lookY: 1.0,
+        },
+        {
+          x: -2.5,
+          y: -0.55,
+          z: 1.2,
+          rotY: initRotY - Math.PI / 2,
+          camX: -3,
+          camY: 1.8,
+          camZ: 5.5,
+          lookY: 1.5,
+        },
+        {
+          x: 3.0,
+          y: -0.55,
+          z: -1,
+          rotY: initRotY + Math.PI / 2,
+          camX: 3,
+          camY: 7,
+          camZ: 2,
+          lookY: 0.8,
+        },
+      ];
+
+      let currentScroll = 0;
+      let targetScroll = 0;
+
+      function getScrollProgress() {
+        const scrollY = window.scrollY;
+        const docHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+        return docHeight > 0 ? scrollY / docHeight : 0;
+      }
+
+      function lerpVal(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      let smoothScrollProgress = 0;
+
+      function updateScenePosition() {
+        const progress = getScrollProgress();
+
+        // Smooth the scroll value for buttery parallax
+        smoothScrollProgress += (progress - smoothScrollProgress) * 0.07;
+
+        const totalSections = sectionConfigs.length;
+        const sectionProgress = progress * (totalSections - 1);
+        const sectionIndex = Math.min(
+          Math.floor(sectionProgress),
+          totalSections - 2,
+        );
+        const t = sectionProgress - sectionIndex;
+        // Use a slower ease-in-out curve that lingers in the middle, preventing the subject from jumping out of frame
+        const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        const from = sectionConfigs[sectionIndex];
+        const to = sectionConfigs[sectionIndex + 1];
+
+        const targetX = lerpVal(from.x, to.x, ease);
+        const targetY = lerpVal(from.y, to.y, ease);
+        const targetZ = lerpVal(from.z, to.z, ease);
+        const targetRotY = lerpVal(from.rotY, to.rotY, ease);
+        const targetCamY = lerpVal(from.camY, to.camY, ease);
+        const targetCamZ = lerpVal(from.camZ, to.camZ, ease);
+
+        sceneGroup.position.x += (targetX - sceneGroup.position.x) * 0.04;
+        sceneGroup.position.y += (targetY - sceneGroup.position.y) * 0.04;
+        sceneGroup.position.z += (targetZ - sceneGroup.position.z) * 0.04;
+        sceneGroup.rotation.y += (targetRotY - sceneGroup.rotation.y) * 0.04;
+
+        const targetLookY = lerpVal(from.lookY, to.lookY, ease);
+
+        const targetCamX = lerpVal(from.camX, to.camX, ease);
+
+        camera.position.y += (targetCamY - camera.position.y) * 0.035;
+        camera.position.z += (targetCamZ - camera.position.z) * 0.035;
+
+        // Smoothly interpolate lookAt target
+        if (!camera.userData.lookY) camera.userData.lookY = 1.5;
+        camera.userData.lookY += (targetLookY - camera.userData.lookY) * 0.035;
+
+        // Smoothly interpolate camera X base
+        if (!camera.userData.baseX) camera.userData.baseX = 0;
+        camera.userData.baseX += (targetCamX - camera.userData.baseX) * 0.035;
+
+        // Apply drag offset — smooth interpolation
+        dragOffsetX += (targetDragOffsetX - dragOffsetX) * 0.08;
+        dragOffsetY += (targetDragOffsetY - dragOffsetY) * 0.08;
+
+        // Offset the camera position based on drag
+        camera.position.x = camera.userData.baseX + dragOffsetX * 0.78;
+        camera.position.y += dragOffsetY * 0.195;
+
+        camera.lookAt(
+          sceneGroup.position.x * 0.5 + dragOffsetX * 0.195,
+          camera.userData.lookY - dragOffsetY * 0.117,
+          0,
+        );
+      }
+
+      // ======= ANIMATION =======
+      const clock = new THREE.Clock();
+      let headPitchTarget = 0;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const t = clock.getElapsedTime();
+
+        // Head-tracking cycle: type for ~3s, glance down at keyboard ~0.8s, back up ~3s, repeat
+        const headCycle = 7.0;
+        const cycleT = (t % headCycle) / headCycle;
+        headPitchTarget = 0;
+        let typingActive = 1.0;
+        if (cycleT < 0.42) {
+          headPitchTarget = 0;
+          typingActive = 1.0;
+        } else if (cycleT < 0.54) {
+          // ease down
+          const lt = (cycleT - 0.42) / 0.12;
+          headPitchTarget = lt * lt * (3 - 2 * lt); // smoothstep
+          typingActive = 1.0 - headPitchTarget * 0.7;
+        } else if (cycleT < 0.65) {
+          headPitchTarget = 1;
+          typingActive = 0.3; // almost paused
+        } else if (cycleT < 0.77) {
+          // ease back up
+          const lt = (cycleT - 0.65) / 0.12;
+          headPitchTarget = 1 - lt * lt * (3 - 2 * lt);
+          typingActive = 0.3 + (1 - headPitchTarget) * 0.7;
+        } else {
+          headPitchTarget = 0;
+          typingActive = 1.0;
+        }
+
+        updateScreenContent(t, headPitchTarget);
+        updateCalcDisplay(t);
+
+        // Apply head rotation — pitch down toward keyboard, subtle Y drift
+        const headPitchAngle = headPitchTarget * 0.25; // radians to tilt down
+        const headYDrift = Math.sin(t * 0.5) * 0.03;
+
+        // Breathing
+        torso.position.y = 1.485 + Math.sin(t * 1.5) * 0.005;
+        head.position.y =
+          1.846 + Math.sin(t * 1.5) * 0.005 - headPitchTarget * 0.01;
+        head.rotation.x = (41.5 * Math.PI) / 180 + headPitchAngle;
+        head.rotation.y =
+          (15.8 * Math.PI) / 180 + headYDrift + headPitchTarget * 0.05;
+
+        // Glasses follow head
+        const glassesRef = personGroup.getObjectByName("glasses");
+        if (glassesRef) {
+          glassesRef.position.copy(head.position);
+          glassesRef.position.y -= 0.01;
+          glassesRef.position.x = head.position.x;
+          glassesRef.position.z = head.position.z;
+          glassesRef.rotation.copy(head.rotation);
+        }
+
+        // Typing animation — arms and hands bob alternately, scaled by typingActive
+        const typeSpeed = 8.0;
+        const typeAmp = 0.018 * typingActive;
+        const leftType = Math.sin(t * typeSpeed) * typeAmp;
+        const rightType = Math.sin(t * typeSpeed + Math.PI) * typeAmp;
+
+        leftForearm.position.y = 1.324 + leftType;
+        leftForearm.rotation.x = (-68.2 * Math.PI) / 180 + leftType * 2.5;
+        leftHand.position.y = 1.306 + leftType * 1.4;
+
+        rightForearm.position.y = 1.316 + rightType;
+        rightForearm.rotation.x = (-69.3 * Math.PI) / 180 + rightType * 2.5;
+        rightHand.position.y = 1.294 + rightType * 1.4;
+
+        // Subtle finger tap — slight scale pulse on hands
+        leftHand.scale.setScalar(
+          1.244 + Math.max(0, Math.sin(t * typeSpeed)) * 0.12 * typingActive,
+        );
+        rightHand.scale.setScalar(
+          1.213 +
+            Math.max(0, Math.sin(t * typeSpeed + Math.PI)) *
+              0.12 *
+              typingActive,
+        );
+
+        // Slight shoulder movement while typing
+        leftUpperArm.rotation.z = Math.sin(t * typeSpeed) * 0.02 * typingActive;
+        rightUpperArm.rotation.z =
+          -Math.sin(t * typeSpeed + Math.PI) * 0.02 * typingActive;
+
+        // Screen flicker
+        const baseScreenInt = screenLight.userData.baseIntensity || 1.2;
+        screenLight.intensity = baseScreenInt + Math.sin(t * 3) * 0.05;
+
+        // Screen face light flicker — subtle shimmer simulating screen content changes
+        if (screenFaceLight.intensity > 0.1) {
+          const flicker1 = Math.sin(t * 2.3) * 0.15;
+          const flicker2 = Math.sin(t * 5.7) * 0.08;
+          const flicker3 = Math.sin(t * 0.9) * 0.2;
+          screenFaceLight.intensity *= 1 + flicker1 + flicker2;
+          screenBounceLight.intensity *= 1 + flicker3;
+        }
+
+        // Plant sway
+        plants.forEach((p, i) => {
+          p.rotation.z = Math.sin(t * 0.5 + i) * 0.015;
+        });
+
+        // Dust
+        dustMaterial.uniforms.uTime.value = t;
+        const posArr = dustGeo.attributes.position.array;
+        for (let i = 0; i < dustCount; i++) {
+          const ix = i * 3,
+            iy = i * 3 + 1,
+            iz = i * 3 + 2;
+          posArr[ix] += Math.sin(t * 0.7 + i * 1.3) * dustSpeeds[ix] * 0.15;
+          posArr[iy] +=
+            Math.sin(t * 0.4 + i * 0.9) * 0.001 + dustSpeeds[iy] * 0.05;
+          posArr[iz] += Math.cos(t * 0.6 + i * 1.1) * dustSpeeds[iz] * 0.12;
+          const dist = Math.sqrt(posArr[ix] ** 2 + (posArr[iz] + 0.2) ** 2);
+          if (posArr[iy] > 2.9 || posArr[iy] < 1.3 || dist > 2.5) {
+            const d = Math.random() * 2.5;
+            const sp = d * 0.4;
+            posArr[ix] = (Math.random() - 0.5) * sp;
+            posArr[iy] = 1.4 + Math.random() * 1.4;
+            posArr[iz] = -0.2 + d * 0.5;
+          }
+        }
+        dustGeo.attributes.position.needsUpdate = true;
+
+        // Gentle auto-rotation
+        sceneGroup.rotation.y += 0.0003;
+
+        // Update scroll-driven position
+        updateScenePosition();
+
+        // Day/Night transition — toggle only (no scroll-driven changes)
+        if (manualThemeOverride !== null) {
+          targetNightMix = manualThemeOverride;
+        } else {
+          targetNightMix = 0; // Default to day mode
+        }
+        currentNightMix += (targetNightMix - currentNightMix) * 0.06;
+        applyTheme(currentNightMix);
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      // Resize
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+
+    <!-- Scroll fade-in observer -->
+    <script>
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) e.target.classList.add("visible");
+          });
+        },
+        { threshold: 0.15 },
+      );
+      document
+        .querySelectorAll(".fade-up")
+        .forEach((el) => observer.observe(el));
+    </script>
+  </body>
+</html>
