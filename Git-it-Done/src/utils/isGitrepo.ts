@@ -1,4 +1,4 @@
-import { gitCommand } from "./gitCommand";
+import { gitCommand } from "./gitCommand.js";
 
 // Check if we're in a git repository
 export function isGitRepo(): boolean {

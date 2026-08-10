@@ -1,6 +1,6 @@
 import path from 'path';
-import { gitCommand } from './gitCommand'; 
-import { FileChange } from './types/types';
+import { gitCommand } from './gitCommand.js'; 
+import { FileChange } from './types/types.js';
 
 // Generate commit message based on changes
 export function generateCommitMessage(files: FileChange[]): string {

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import { GitChanges } from './types/types';
-import { formatFileStatus } from './formatFileStatus';
+import { GitChanges } from './types/types.js';
+import { formatFileStatus } from './formatFileStatus.js';
 
 export function displayRepositoryStatus(changes: GitChanges): void {
   console.log(chalk.bold('\n📁 Repository Status:'));

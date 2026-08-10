@@ -1,5 +1,5 @@
-import { gitCommand } from "./gitCommand";
-import { FileChange, GitChanges } from "./types/types";
+import { gitCommand } from "./gitCommand.js";
+import { FileChange, GitChanges } from "./types/types.js";
 
 // Get file changes
 function parseGitStatus(output: string, defaultStatus = ''): FileChange[] {

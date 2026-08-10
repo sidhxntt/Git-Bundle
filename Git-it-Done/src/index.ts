@@ -1,15 +1,15 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 
 import { intro, outro, cancel } from '@clack/prompts';
 import chalk from 'chalk';
-import { checkGitStatus } from './utils/checkGitStatus';
-import { getChanges } from './utils/getFileChanges';
-import { displayRepositoryStatus } from './utils/displayStatus';
-import { handleFileStaging } from './utils/fileStaging';
-import { handleCommitMessage } from './utils/commitMessage';
-import { performCommit } from './utils/performCommit';
-import { handlePushToRemote } from './utils/push_to_remote';
-import start from './utils/process_interruption';
+import { checkGitStatus } from './utils/checkGitStatus.js';
+import { getChanges } from './utils/getFileChanges.js';
+import { displayRepositoryStatus } from './utils/displayStatus.js';
+import { handleFileStaging } from './utils/fileStaging.js';
+import { handleCommitMessage } from './utils/commitMessage.js';
+import { performCommit } from './utils/performCommit.js';
+import { handlePushToRemote } from './utils/push_to_remote.js';
+import start from './utils/process_interruption.js';
 
 async function main(): Promise<void> {
   console.clear();

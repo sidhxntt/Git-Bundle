@@ -1,6 +1,6 @@
 import { confirm, spinner, cancel, isCancel } from '@clack/prompts';
 import chalk from 'chalk';
-import { gitCommand } from './gitCommand';
+import { gitCommand } from './gitCommand.js';
 
 export async function performCommit(commitMessage: string): Promise<boolean> {
   // Confirm commit

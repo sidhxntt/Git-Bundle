@@ -1,6 +1,6 @@
 import { confirm, spinner, isCancel } from '@clack/prompts';
 import chalk from 'chalk';
-import { gitCommand } from './gitCommand';
+import { gitCommand } from './gitCommand.js';
 
 export async function handlePushToRemote(): Promise<void> {
   const shouldPush = await confirm({

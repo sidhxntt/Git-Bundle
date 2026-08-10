@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
-import { gitCommand } from './gitCommand'; 
-import { GitStatus } from './types/types';
+import { gitCommand } from './gitCommand.js'; 
+import { GitStatus } from './types/types.js';
 
 // Enhanced function to check git repository status
 export function checkGitStatus(): GitStatus{

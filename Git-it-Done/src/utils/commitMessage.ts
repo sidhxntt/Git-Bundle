@@ -1,8 +1,8 @@
 import { select, text, cancel, isCancel } from '@clack/prompts';
 import chalk from 'chalk';
-import { generateCommitMessage } from './generateCommitMessage';
-import { formatFileStatus } from './formatFileStatus';
-import { FileChange } from './types/types';
+import { generateCommitMessage } from './generateCommitMessage.js';
+import { formatFileStatus } from './formatFileStatus.js';
+import { FileChange } from './types/types.js';
 
 export async function handleCommitMessage(filesToCommit: FileChange[]): Promise<string> {
   // Display files to commit

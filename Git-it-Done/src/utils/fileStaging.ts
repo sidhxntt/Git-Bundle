@@ -1,9 +1,9 @@
 import { select, multiselect, spinner, cancel, isCancel } from '@clack/prompts';
 import chalk from 'chalk';
-import { gitCommand } from './gitCommand';
-import { getChanges } from './getFileChanges';
-import { formatFileStatus } from './formatFileStatus';
-import { GitChanges, FileChange } from './types/types';
+import { gitCommand } from './gitCommand.js';
+import { getChanges } from './getFileChanges.js';
+import { formatFileStatus } from './formatFileStatus.js';
+import { GitChanges, FileChange } from './types/types.js';
 
 export async function handleFileStaging(changes: GitChanges): Promise<FileChange[]> {
   let filesToCommit = changes.staged;
