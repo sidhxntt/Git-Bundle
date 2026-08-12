@@ -1,6 +1,10 @@
 export interface FileChange {
+  /** Single-letter git status: A, M, D, R, C, T, U or `??` for untracked. */
   status: string;
+  /** Repo-root-relative path. For renames/copies this is the destination. */
   file: string;
+  /** Source path, present only for renames and copies. */
+  from?: string;
 }
 
 export interface GitChanges {
@@ -12,19 +16,26 @@ export interface GitChanges {
 export interface GitStatus {
   valid: boolean;
   reason?: string;
+  /** Non-fatal problems worth shouting about (e.g. detached HEAD). */
+  warnings?: string[];
 }
 
-export type CommitType = 
-  | 'feat' 
-  | 'fix' 
-  | 'docs' 
-  | 'style' 
-  | 'refactor' 
-  | 'test' 
-  | 'chore' 
-  | 'deps' 
-  | 'config' 
-  | 'remove';
+/**
+ * Conventional Commits types only — anything outside this list is rejected by a
+ * standard commitlint `commit-msg` hook.
+ */
+export type CommitType =
+  | 'feat'
+  | 'fix'
+  | 'docs'
+  | 'style'
+  | 'refactor'
+  | 'perf'
+  | 'test'
+  | 'build'
+  | 'ci'
+  | 'chore'
+  | 'revert';
 
 export interface CommitInfo {
   type: CommitType;

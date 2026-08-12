@@ -1,6 +1,6 @@
 {
   "name": "git-it-done",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Smart auto-commit tool with beautiful CLI interface for streamlined Git workflow",
   "main": "dist/index.js",
   "type": "module",
@@ -12,14 +12,14 @@
     "build": "tsc",
     "prod": "node ./dist/index.js",
     "prepublishOnly": "npm run build",
-    "test": "echo \"No tests specified\" && exit 0",
+    "test": "npm run build && node --test \"test/*.test.js\"",
     "start": "npm run build && npm run prod",
     "install-global": "npm install -g .",
     "uninstall-global": "npm uninstall -g git-it-done"
   },
   "files": [
     "dist/",
-    "README.md",
+    "readme.md",
     "LICENSE"
   ],
   "keywords": [
@@ -32,16 +32,17 @@
     "interactive",
     "conventional-commits"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Siddhant Gupta <siddhant@invytt.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sidhxntt/AutoCommitter.git"
+    "url": "https://github.com/sidhxntt/Git-Bundle.git",
+    "directory": "Git-it-Done"
   },
   "bugs": {
-    "url": "https://github.com/sidhxntt/AutoCommitter/issues"
+    "url": "https://github.com/sidhxntt/Git-Bundle/issues"
   },
-  "homepage": "https://github.com/sidhxntt/AutoCommitter#readme",
+  "homepage": "https://github.com/sidhxntt/Git-Bundle/tree/main/Git-it-Done#readme",
   "engines": {
     "node": ">=16.0.0"
   },

@@ -21,6 +21,7 @@ async function main(): Promise<void> {
     cancel(gitStatus.reason);
     process.exit(1);
   }
+  gitStatus.warnings?.forEach(warning => console.log(chalk.yellow.bold(`\n⚠️  ${warning}`)));
 
   // 2. Get current repository changes
   const changes = getChanges();

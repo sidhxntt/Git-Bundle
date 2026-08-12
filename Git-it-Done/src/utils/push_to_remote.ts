@@ -1,54 +1,88 @@
 import { confirm, spinner, isCancel } from '@clack/prompts';
 import chalk from 'chalk';
-import { gitCommand } from './gitCommand.js';
+import { gitCommand, gitErrorText, gitOutput } from './gitCommand.js';
+
+const PROTECTED_BRANCHES = new Set(['main', 'master', 'production', 'release']);
+
+interface PushTarget {
+  branch: string;
+  remote: string;
+  /** Upstream ref as `<remote>/<branch>`, or null when none is configured. */
+  upstream: string | null;
+}
 
 export async function handlePushToRemote(): Promise<void> {
+  const remotes = (gitOutput(['remote']) ?? '').split('\n').filter(Boolean);
+  if (remotes.length === 0) {
+    console.log(chalk.yellow('⚠️  No remote repository configured. Skipping push.'));
+    return;
+  }
+
+  const branch = gitOutput(['rev-parse', '--abbrev-ref', 'HEAD']);
+  if (!branch || branch === 'HEAD') {
+    console.log(chalk.yellow('⚠️  HEAD is detached — not pushing. Create a branch first.'));
+    return;
+  }
+
+  const upstream = gitOutput(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+  const remote = upstream ? upstream.split('/')[0] : remotes.includes('origin') ? 'origin' : remotes[0];
+  const target: PushTarget = { branch, remote, upstream };
+
+  if (PROTECTED_BRANCHES.has(branch.toLowerCase())) {
+    console.log(chalk.yellow.bold(`\n⚠️  You are about to push directly to "${branch}".`));
+  }
+  if (!upstream) {
+    console.log(
+      chalk.yellow(`ℹ️  "${branch}" has no upstream; it will be created as ${remote}/${branch}.`)
+    );
+  }
+
   const shouldPush = await confirm({
-    message: 'Push to remote repository?'
+    message: upstream
+      ? `Push to ${upstream}?`
+      : `Push to ${remote}/${branch} and set it as upstream?`
   });
 
   if (isCancel(shouldPush) || !shouldPush) {
     return;
   }
 
-  await executePush();
+  executePush(target);
 }
 
-async function executePush(): Promise<void> {
+function executePush(target: PushTarget): void {
   const pushSpinner = spinner();
-  pushSpinner.start('Pushing to remote...');
+  pushSpinner.start(`Pushing to ${target.remote}/${target.branch}...`);
 
-  // Check if remote exists
-  const remotes = gitCommand('remote');
-  if (!remotes) {
-    pushSpinner.stop('⚠️  No remote repository configured');
-    console.log(chalk.yellow('No remote repository found. Skipping push.'));
+  const args = target.upstream
+    ? ['push']
+    : ['push', '--set-upstream', target.remote, target.branch];
+  const result = gitCommand(args);
+
+  if (result.ok) {
+    pushSpinner.stop('🚀 Changes pushed successfully!');
+    const summary = gitErrorText(result);
+    if (summary) {
+      console.log(chalk.dim(summary));
+    }
     return;
   }
 
-  try {
-    const pushResult = gitCommand('push');
-    
-    if (pushResult !== null) {
-      pushSpinner.stop('🚀 Changes pushed successfully!');
-    } else {
-      pushSpinner.stop('❌ Push failed');
-      handlePushFailure();
-    }
-  } catch (error: any) {
-    pushSpinner.stop('❌ Push failed');
-    console.log(chalk.red('Failed to push. Error details:'));
-    console.log(chalk.dim(error.message));
-  }
+  pushSpinner.stop('❌ Push failed');
+  handlePushFailure(target, gitErrorText(result));
 }
 
-function handlePushFailure(): void {
-  console.log(chalk.red('Failed to push. You may need to set upstream branch.'));
-  
-  const branch = gitCommand('rev-parse --abbrev-ref HEAD');
-  if (branch) {
-    console.log(chalk.dim(`Try: git push --set-upstream origin ${branch}`));
-  } else {
-    console.log(chalk.dim('Try: git push --set-upstream origin <branch-name>'));
+function handlePushFailure(target: PushTarget, details: string): void {
+  console.log(chalk.red('\nGit reported:'));
+  console.log(chalk.dim(details));
+
+  if (/non-fast-forward|fetch first|behind its remote/i.test(details)) {
+    console.log(
+      chalk.yellow(`Remote has commits you don't. Try: git pull --rebase ${target.remote} ${target.branch}`)
+    );
+  } else if (/Authentication failed|could not read Username|Permission denied|403/i.test(details)) {
+    console.log(chalk.yellow('Authentication failed — check your credentials or SSH key.'));
+  } else if (/protected branch|pre-receive hook declined/i.test(details)) {
+    console.log(chalk.yellow('The remote rejected the push (protected branch or server-side hook).'));
   }
 }

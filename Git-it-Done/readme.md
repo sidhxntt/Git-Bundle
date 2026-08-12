@@ -60,7 +60,7 @@ npm install -g git-it-done
 
 2. **Run the auto-committer**:
    ```bash
-   auto-commit
+   git-it-done
    ```
 
 3. **Follow the interactive prompts**:
@@ -75,7 +75,7 @@ npm install -g git-it-done
 ### Basic Workflow
 
 ```bash
-$ auto-commit
+$ git-it-done
 
 ┌  Auto Commit Tool
 │
@@ -118,8 +118,8 @@ The tool analyzes your changes and generates conventional commit messages:
 - `docs: update API documentation`
 - `style(ui): improve button styling`
 - `test(auth): add authentication tests`
-- `deps: update dependencies`
-- `config: update build configuration`
+- `build: update dependencies`
+- `chore: update configuration`
 
 ## 🏗️ Project Structure
 
@@ -232,7 +232,7 @@ We welcome contributions! Please follow these steps:
 ```bash
 # Clone your fork
 git clone <your-fork-url>
-cd auto-committer
+cd Git-Bundle/Git-it-Done
 
 # Install dependencies
 npm install

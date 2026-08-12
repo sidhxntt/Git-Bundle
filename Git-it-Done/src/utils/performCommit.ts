@@ -1,6 +1,6 @@
 import { confirm, spinner, cancel, isCancel } from '@clack/prompts';
 import chalk from 'chalk';
-import { gitCommand } from './gitCommand.js';
+import { gitCommand, gitErrorText, gitOutput, GitResult } from './gitCommand.js';
 
 export async function performCommit(commitMessage: string): Promise<boolean> {
   // Confirm commit
@@ -17,50 +17,46 @@ export async function performCommit(commitMessage: string): Promise<boolean> {
   const s = spinner();
   s.start('Committing changes...');
 
-  try {
-    const success = executeCommit(commitMessage);
-    
-    if (!success) {
-      s.stop('❌ Commit failed');
-      cancel('Failed to commit changes. Please check your git status.');
-      return false;
-    }
+  // The message is passed as a single argv entry — no shell, so `$(id)`,
+  // backticks and `!` reach git verbatim.
+  const result = gitCommand(['commit', '-m', commitMessage]);
 
-    // Verify commit was created
-    const lastCommit = gitCommand('log -1 --oneline');
-    if (!lastCommit) {
-      s.stop('⚠️  Commit status unclear');
-      console.log(chalk.yellow('Commit may not have been created. Please check git status manually.'));
-      return false;
-    } else {
-      s.stop('✅ Changes committed successfully!');
-      console.log(chalk.dim(`Last commit: ${lastCommit}`));
-      return true;
-    }
-
-  } catch (error: any) {
+  if (!result.ok) {
     s.stop('❌ Commit failed');
-    handleCommitError(error);
+    handleCommitError(result);
     return false;
   }
+
+  // Verify commit was created
+  const lastCommit = gitOutput(['log', '-1', '--oneline']);
+  if (!lastCommit) {
+    s.stop('⚠️  Commit status unclear');
+    console.log(chalk.yellow('Commit may not have been created. Please check git status manually.'));
+    return false;
+  }
+
+  s.stop('✅ Changes committed successfully!');
+  console.log(chalk.dim(`Last commit: ${lastCommit}`));
+  return true;
 }
 
-function executeCommit(commitMessage: string): boolean {
-  const escapedMessage = JSON.stringify(commitMessage);
-  const result = gitCommand(`commit -m ${escapedMessage}`);
-  return result !== null;
-}
+function handleCommitError(result: GitResult): void {
+  const details = gitErrorText(result);
 
-function handleCommitError(error: any): void {
-  const msg = error.message || '';
-  
-  if (msg.includes('nothing to commit')) {
+  // Always surface git's own output — pre-commit hook rejections and commitlint
+  // failures only ever explain themselves there.
+  console.log(chalk.red('\nGit reported:'));
+  console.log(chalk.dim(details));
+
+  if (/nothing to commit|no changes added to commit/i.test(details)) {
     cancel('Nothing to commit - working tree clean');
-  } else if (msg.includes('Please tell me who you are')) {
+  } else if (/Please tell me who you are/i.test(details)) {
     cancel('Git user not configured. Run: git config --global user.email "you@example.com"');
-  } else if (msg.includes('not a git repository')) {
+  } else if (/not a git repository/i.test(details)) {
     cancel('Not in a git repository');
+  } else if (result.status === 1 && /hook|husky|commitlint/i.test(details)) {
+    cancel('A git hook rejected the commit (see output above)');
   } else {
-    cancel(`Failed to commit: ${msg}`);
+    cancel('Failed to commit changes (see output above)');
   }
 }

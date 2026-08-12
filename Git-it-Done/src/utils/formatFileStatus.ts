@@ -10,6 +10,12 @@ export function formatFileStatus(status: string): string {
       return chalk.red('- deleted');
     case 'R':
       return chalk.blue('→ renamed');
+    case 'C':
+      return chalk.blue('⧉ copied');
+    case 'T':
+      return chalk.magenta('± typechange');
+    case 'U':
+      return chalk.red('! unmerged');
     case '??':
       return chalk.cyan('? untracked');
     default:
