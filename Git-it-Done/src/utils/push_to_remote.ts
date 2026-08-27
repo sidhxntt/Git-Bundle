@@ -11,6 +11,35 @@ interface PushTarget {
   upstream: string | null;
 }
 
+export function parseUpstream(upstream: string, remotes: string[]): { remote: string; branch: string } | null {
+  const remote = remotes
+    .filter(candidate => upstream.startsWith(`${candidate}/`))
+    .sort((a, b) => b.length - a.length)[0];
+  if (!remote) return null;
+  const branch = upstream.slice(remote.length + 1);
+  return branch ? { remote, branch } : null;
+}
+
+export function resolvePushTarget(
+  currentBranch: string,
+  upstream: string | null,
+  remotes: string[]
+): PushTarget | null {
+  if (upstream) {
+    const target = parseUpstream(upstream, remotes);
+    return target ? { branch: target.branch, remote: target.remote, upstream } : null;
+  }
+  const remote = remotes.includes('origin') ? 'origin' : remotes[0];
+  return remote ? { branch: currentBranch, remote, upstream: null } : null;
+}
+
+/** Always name the reviewed remote and branch; user push.default settings must not redirect it. */
+export function buildPushArgs(upstream: string | null, remote: string, branch: string): string[] {
+  return upstream
+    ? ['push', remote, `HEAD:${branch}`]
+    : ['push', '--set-upstream', remote, `HEAD:${branch}`];
+}
+
 export async function handlePushToRemote(): Promise<void> {
   const remotes = (gitOutput(['remote']) ?? '').split('\n').filter(Boolean);
   if (remotes.length === 0) {
@@ -25,22 +54,25 @@ export async function handlePushToRemote(): Promise<void> {
   }
 
   const upstream = gitOutput(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
-  const remote = upstream ? upstream.split('/')[0] : remotes.includes('origin') ? 'origin' : remotes[0];
-  const target: PushTarget = { branch, remote, upstream };
+  const target = resolvePushTarget(branch, upstream, remotes);
+  if (!target) {
+    console.log(chalk.yellow('Your configured upstream remote no longer exists. Repair it with `git branch --unset-upstream` or configure a valid remote before pushing.'));
+    return;
+  }
 
-  if (PROTECTED_BRANCHES.has(branch.toLowerCase())) {
-    console.log(chalk.yellow.bold(`\n⚠️  You are about to push directly to "${branch}".`));
+  if (PROTECTED_BRANCHES.has(target.branch.toLowerCase())) {
+    console.log(chalk.yellow.bold(`\n⚠️  You are about to push directly to "${target.branch}".`));
   }
   if (!upstream) {
     console.log(
-      chalk.yellow(`ℹ️  "${branch}" has no upstream; it will be created as ${remote}/${branch}.`)
+      chalk.yellow(`ℹ️  "${branch}" has no upstream; it will be created as ${target.remote}/${target.branch}.`)
     );
   }
 
   const shouldPush = await confirm({
     message: upstream
       ? `Push to ${upstream}?`
-      : `Push to ${remote}/${branch} and set it as upstream?`
+      : `Push to ${target.remote}/${target.branch} and set it as upstream?`
   });
 
   if (isCancel(shouldPush) || !shouldPush) {
@@ -54,9 +86,7 @@ function executePush(target: PushTarget): void {
   const pushSpinner = spinner();
   pushSpinner.start(`Pushing to ${target.remote}/${target.branch}...`);
 
-  const args = target.upstream
-    ? ['push']
-    : ['push', '--set-upstream', target.remote, target.branch];
+  const args = buildPushArgs(target.upstream, target.remote, target.branch);
   const result = gitCommand(args);
 
   if (result.ok) {

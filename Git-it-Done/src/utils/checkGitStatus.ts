@@ -28,13 +28,11 @@ export function checkGitStatus(): GitStatus {
     return { valid: false, reason: 'Not in a Git repository' };
   }
 
-  // Step 3: Refuse to commit into a half-finished merge/rebase/cherry-pick
+  // An in-progress operation is recoverable from the workspace conflict UI.
   for (const { entry, reason } of IN_PROGRESS) {
     if (existsSync(path.join(gitDir, entry))) {
-      return {
-        valid: false,
-        reason: `${reason}. Finish or abort it first (e.g. \`git merge --abort\`, \`git rebase --abort\`).`
-      };
+      warnings.push(`${reason}. Select “Resolve in-progress operation” for guided recovery.`);
+      break;
     }
   }
 
