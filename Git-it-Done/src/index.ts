@@ -3,15 +3,17 @@
 import { intro, outro, cancel } from '@clack/prompts';
 import chalk from 'chalk';
 import { checkGitStatus } from './utils/checkGitStatus.js';
-import { getChanges } from './utils/getFileChanges.js';
-import { displayRepositoryStatus } from './utils/displayStatus.js';
-import { handleFileStaging } from './utils/fileStaging.js';
-import { handleCommitMessage } from './utils/commitMessage.js';
-import { performCommit } from './utils/performCommit.js';
-import { handlePushToRemote } from './utils/push_to_remote.js';
+import { runCommitWorkflow } from './utils/commitWorkflow.js';
+import { runWorkspace } from './utils/workspace.js';
+import { getRepositoryState } from './utils/repository.js';
+import { handleInProgressOperation } from './utils/conflicts.js';
 import start from './utils/process_interruption.js';
 
 async function main(): Promise<void> {
+  if (process.argv.slice(2).some(argument => argument === '--help' || argument === '-h')) {
+    console.log(`Git-it-Done — a guided Git workspace\n\nUsage:\n  git-it-done          Open the interactive workspace\n  git-it-done commit   Start the direct commit workflow\n  git-it-done --help   Show this help\n\nChoose actions in the terminal UI; no Git command memorization is required.`);
+    return;
+  }
   console.clear();
   intro(chalk.bgBlue(' Auto Commit Tool '));
 
@@ -23,39 +25,10 @@ async function main(): Promise<void> {
   }
   gitStatus.warnings?.forEach(warning => console.log(chalk.yellow.bold(`\n⚠️  ${warning}`)));
 
-  // 2. Get current repository changes
-  const changes = getChanges();
-  const allFiles = [...changes.staged, ...changes.unstaged, ...changes.untracked];
-
-  // 3. Handle no changes case
-  if (allFiles.length === 0) {
-    outro(chalk.green('✨ Working directory is clean. Nothing to commit! 🎉'));
-    process.exit(0);
-  }
-
-  // 4. Display current repository status
-  displayRepositoryStatus(changes);
-
-  // 5. Handle file staging if needed
-  const filesToCommit = await handleFileStaging(changes);
-  
-  if (filesToCommit.length === 0) {
-    outro(chalk.yellow('ℹ️  No files to commit after staging process.'));
-    process.exit(0);
-  }
-
-  // 6. Handle commit message creation
-  const commitMessage = await handleCommitMessage(filesToCommit);
-
-  // 7. Perform the commit
-  const commitSuccess = await performCommit(commitMessage);
-  
-  if (!commitSuccess) {
-    process.exit(1);
-  }
-
-  // 8. Handle push to remote
-  await handlePushToRemote();
+  if (process.argv[2] === 'commit' && getRepositoryState().operation) {
+    await handleInProgressOperation();
+  } else if (process.argv[2] === 'commit') await runCommitWorkflow();
+  else await runWorkspace();
 
   outro(chalk.green('🎉 All done!'));
 }

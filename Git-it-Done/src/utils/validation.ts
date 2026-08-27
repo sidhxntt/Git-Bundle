@@ -1,4 +1,5 @@
 import { AheadBehind } from './repository.js';
+import { gitCommand } from './gitCommand.js';
 
 export type SyncRecommendation = 'up-to-date' | 'push' | 'pull' | 'inspect';
 
@@ -8,7 +9,7 @@ export function validateBranchName(name: string): string | undefined {
   if (value.startsWith('-')) return 'Branch names cannot start with a dash';
   if (/\s/.test(value)) return 'Branch names cannot contain spaces';
   if (value.includes('..')) return 'Branch names cannot contain consecutive dots';
-  if (/[@~^:?*\\[\x00-\x1f]/.test(value) || value.endsWith('.') || value.endsWith('/')) {
+  if (/[@~^:?*\\[\x00-\x1f]/.test(value) || value.endsWith('.') || value.endsWith('/') || !gitCommand(['check-ref-format', '--branch', value]).ok) {
     return 'Use a valid Git branch name';
   }
   return undefined;
